@@ -70,14 +70,15 @@ function head(p) {
   <meta property="og:description" content="${esc(p.desc)}">
   <meta property="og:url" content="${url}">
   <meta property="og:image" content="${DOMAIN}/images/${p.ogImage || 'hero_bg.jpg'}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
+  <meta property="og:image:width" content="${p.ogImageW || 1200}">
+  <meta property="og:image:height" content="${p.ogImageH || 630}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${esc(p.title)}">
   <meta name="twitter:description" content="${esc(p.desc)}">
   <meta name="twitter:image" content="${DOMAIN}/images/${p.ogImage || 'hero_bg.jpg'}">
 
   <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="/favicon.png" sizes="48x48">
   <link rel="icon" type="image/png" href="/favicon-48.png" sizes="48x48">
   <link rel="icon" type="image/png" href="/favicon-192.png" sizes="192x192">
   <link rel="apple-touch-icon" href="/favicon-192.png">
@@ -241,6 +242,33 @@ function schemas(p) {
     });
   }
 
+  /* ImageGallery is emitted only on the page that owns the full set, so the
+     homepage strip does not produce a second, near-identical gallery node
+     competing with it. A page opts in by declaring `gallery`.
+
+     No creditText or copyrightNotice is claimed: the frames are licensed
+     stock photography and asserting ownership of them would be untrue. */
+  if (p.gallery && p.gallery.length) {
+    out += jsonLd({
+      '@context': 'https://schema.org',
+      '@type': 'ImageGallery',
+      '@id': `${DOMAIN}/#gallery`,
+      name: p.galleryName,
+      description: p.desc,
+      url: p.canonical === '/' ? `${DOMAIN}/` : `${DOMAIN}${p.canonical}`,
+      numberOfItems: p.gallery.length,
+      associatedMedia: p.gallery.map(g => ({
+        '@type': 'ImageObject',
+        contentUrl: `${DOMAIN}/images/gallery/${g.file}`,
+        thumbnailUrl: `${DOMAIN}/images/gallery/${g.file}`,
+        width: g.w,
+        height: g.h,
+        caption: g.title,
+        representativeOfPage: true
+      }))
+    });
+  }
+
   return out;
 }
 
@@ -287,7 +315,8 @@ const record = (p, out, lang) => {
     en: enUrl,
     hi: hiUrl,
     priority: p.priority || 0.8,
-    changefreq: p.changefreq || 'monthly'
+    changefreq: p.changefreq || 'monthly',
+    images: p.sitemapImages || null
   });
 };
 
@@ -307,17 +336,26 @@ const urls = written
       u.hi ? `<xhtml:link rel="alternate" hreflang="hi" href="${loc(u.hi)}"/>` : '',
       `<xhtml:link rel="alternate" hreflang="x-default" href="${loc(u.en)}"/>`
     ].filter(Boolean).join('');
+    // Google reads <image:image> to associate files with a page. Google's own
+    // limit is 1000 per page, and the cap here is a guard against a content
+    // edit silently producing an oversized sitemap.
+    const imgs = (u.images || []).slice(0, 100).map(g =>
+      `    <image:image>
+      <image:loc>${DOMAIN}/images/gallery/${g.file}</image:loc>
+      <image:title>${g.title}</image:title>
+      <image:caption>${g.title}</image:caption>
+    </image:image>`).join('\n');
     return `  <url>
     <loc>${loc(u.canon)}</loc>
     <lastmod>${YEAR}-09-29</lastmod>
     <changefreq>${u.changefreq}</changefreq>
-    <priority>${u.priority.toFixed(1)}</priority>${alts}
+    <priority>${u.priority.toFixed(1)}</priority>${alts}${imgs ? '\n' + imgs : ''}
   </url>`;
   }).join('\n');
 
 fs.writeFileSync(path.join(ROOT, 'sitemap.xml'),
   `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${urls}
 </urlset>
 `, 'utf8');

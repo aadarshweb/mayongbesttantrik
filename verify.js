@@ -22,7 +22,10 @@ console.log('   ' + blocks + ' schema blocks, all parse');
 
 // 2. manifest + robots + sitemap present and well formed
 console.log('2. support files');
-for (const f of ['robots.txt', 'sitemap.xml', 'manifest.json', 'favicon.ico', 'favicon-48.png', 'favicon-192.png', 'css/style.css', 'js/script.js']) {
+// favicon.png is the plain-named 48px icon some crawlers look for by
+// convention rather than by parsing the <link> tags, so it is listed here
+// alongside the rest of the support files.
+for (const f of ['robots.txt', 'sitemap.xml', 'manifest.json', 'favicon.ico', 'favicon.png', 'favicon-48.png', 'favicon-192.png', 'css/style.css', 'js/script.js']) {
   if (!fs.existsSync(path.join(__dirname, f))) bad('missing ' + f);
 }
 try { JSON.parse(fs.readFileSync('manifest.json', 'utf8')); } catch (e) { bad('manifest.json: ' + e.message); }

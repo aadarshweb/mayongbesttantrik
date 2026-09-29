@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://mayongbesttantrik.com/</loc>
     <lastmod>2026-09-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority><xhtml:link rel="alternate" hreflang="en" href="https://mayongbesttantrik.com/"/><xhtml:link rel="alternate" hreflang="hi" href="https://mayongbesttantrik.com/hi/index.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://mayongbesttantrik.com/"/>
-  </url>
-  <url>
-    <loc>https://mayongbesttantrik.com/index.html</loc>
-    <lastmod>2026-09-29</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority><xhtml:link rel="alternate" hreflang="en" href="https://mayongbesttantrik.com/index.html"/><xhtml:link rel="alternate" hreflang="hi" href="https://mayongbesttantrik.com/hi/index.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://mayongbesttantrik.com/index.html"/>
   </url>
   <url>
     <loc>https://mayongbesttantrik.com/services.html</loc>
@@ -275,6 +269,78 @@
     <lastmod>2026-09-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority><xhtml:link rel="alternate" hreflang="en" href="https://mayongbesttantrik.com/about.html"/><xhtml:link rel="alternate" hreflang="hi" href="https://mayongbesttantrik.com/hi/about.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://mayongbesttantrik.com/about.html"/>
+  </url>
+  <url>
+    <loc>https://mayongbesttantrik.com/gallery.html</loc>
+    <lastmod>2026-09-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority><xhtml:link rel="alternate" hreflang="en" href="https://mayongbesttantrik.com/gallery.html"/><xhtml:link rel="alternate" hreflang="hi" href="https://mayongbesttantrik.com/hi/gallery.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://mayongbesttantrik.com/gallery.html"/>
+    <image:image>
+      <image:loc>https://mayongbesttantrik.com/images/gallery/kamakhya-temple-complex-night-mist.jpg</image:loc>
+      <image:title>After the lamps are lit</image:title>
+      <image:caption>After the lamps are lit</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://mayongbesttantrik.com/images/gallery/kamakhya-shikhara-golden-finial-mist.jpg</image:loc>
+      <image:title>Reading a temple from below</image:title>
+      <image:caption>Reading a temple from below</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://mayongbesttantrik.com/images/gallery/stone-buddha-statue-ritual-mist.jpg</image:loc>
+      <image:title>The two details that tell you somebody came</image:title>
+      <image:caption>The two details that tell you somebody came</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://mayongbesttantrik.com/images/gallery/shiva-lingam-kumkum-dark-shrine.jpg</image:loc>
+      <image:title>Kumkum, wet stone and a second lamp</image:title>
+      <image:caption>Kumkum, wet stone and a second lamp</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://mayongbesttantrik.com/images/gallery/ancient-stone-temple-corridor-lingam.jpg</image:loc>
+      <image:title>A doorway, a step, then another</image:title>
+      <image:caption>A doorway, a step, then another</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://mayongbesttantrik.com/images/gallery/shiva-lingam-hibiscus-offering-mist.jpg</image:loc>
+      <image:title>One flower, one row, every morning</image:title>
+      <image:caption>One flower, one row, every morning</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://mayongbesttantrik.com/hi/gallery.html</loc>
+    <lastmod>2026-09-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority><xhtml:link rel="alternate" hreflang="en" href="https://mayongbesttantrik.com/gallery.html"/><xhtml:link rel="alternate" hreflang="hi" href="https://mayongbesttantrik.com/hi/gallery.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://mayongbesttantrik.com/gallery.html"/>
+    <image:image>
+      <image:loc>https://mayongbesttantrik.com/images/gallery/kamakhya-temple-complex-night-mist.jpg</image:loc>
+      <image:title>दीपक जलने के बाद</image:title>
+      <image:caption>दीपक जलने के बाद</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://mayongbesttantrik.com/images/gallery/kamakhya-shikhara-golden-finial-mist.jpg</image:loc>
+      <image:title>मंदिर को नीचे से पढ़ना</image:title>
+      <image:caption>मंदिर को नीचे से पढ़ना</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://mayongbesttantrik.com/images/gallery/stone-buddha-statue-ritual-mist.jpg</image:loc>
+      <image:title>वो दो निशानी जो बताते हैं कोई आया था</image:title>
+      <image:caption>वो दो निशानी जो बताते हैं कोई आया था</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://mayongbesttantrik.com/images/gallery/shiva-lingam-kumkum-dark-shrine.jpg</image:loc>
+      <image:title>सिंदूर, गीला पत्थर और दूसरा दीपक</image:title>
+      <image:caption>सिंदूर, गीला पत्थर और दूसरा दीपक</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://mayongbesttantrik.com/images/gallery/ancient-stone-temple-corridor-lingam.jpg</image:loc>
+      <image:title>एक द्वार, फिर एक सीढ़ी, फिर एक और</image:title>
+      <image:caption>एक द्वार, फिर एक सीढ़ी, फिर एक और</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://mayongbesttantrik.com/images/gallery/shiva-lingam-hibiscus-offering-mist.jpg</image:loc>
+      <image:title>एक फूल, एक कतार, हर सुबह</image:title>
+      <image:caption>एक फूल, एक कतार, हर सुबह</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://mayongbesttantrik.com/hi/mayong-itihas.html</loc>

@@ -7,6 +7,12 @@ const { PHONE, TEL, WA } = U;
 
 const S = require('./en-shared.js');
 const { NAV, SERVICES, PROCESS, TESTIMONIALS, chrome } = S;
+
+// Declared here rather than next to the gallery page below: the homepage body
+// is a template literal evaluated at push() time, so a const further down the
+// file would still be in its temporal dead zone when it is read.
+const G = require('./gallery.js');
+const GALLERY_EN = G.byLang('en');
 const HEAD_FAQ = [
   { q: 'Who is the best tantrik in Kamakhya Temple?', a: 'There is no official ranking, and anyone who claims one is selling you something. What can be checked is years of practice, whether the person will explain the diagnosis before taking money, and whether there is a fixed address you can visit. Atul Nath has practised in Mayong for seventeen years and has spent nine years in sadhana at Kamakhya Temple, and sees clients at both. Call +91 9365474087 to speak to him directly.' },
   { q: 'What is the difference between Mayong and Kamakhya tantra?', a: 'They are related but not the same. Mayong is a small place in Morigaon district that has been the regional centre of tantra for centuries, and the practice there is centred on scriptural method, mantra and discipline. Kamakhya Temple in Guwahati is a Shakti Peetha, and the practice there is centred on the goddess, on puja, and on the offering itself. Atul Nath works from both and uses whichever suits the problem in front of him.' },
@@ -121,6 +127,17 @@ ${U.testimonialBlock(Object.assign(chrome(), {
   testiIntro: 'Names shortened at the request of the people quoted. Every case is different and no result can be promised in advance.',
   testimonials: TESTIMONIALS
 }))}
+
+${U.galleryBlock({
+  prefix: '',
+  id: 'gallery-preview',
+  eyebrow: 'Illustrated',
+  title: 'The temples, the lingams and the offerings',
+  intro: 'Three frames from the gallery, each with a note on what is actually in the picture. <a href="gallery.html">See all six images with the full notes</a>.',
+  items: G.strip('en', 3)
+})}
+
+${U.lightbox({ prefix: '', label: 'Enlarged view of a gallery image', close: 'Close' })}
 
 ${U.faqBlock(HEAD_FAQ, 'Questions people ask before they call')}`
 });
@@ -404,6 +421,95 @@ pages.push({
     </div>
   </div>
 </section>`
+});
+
+/* --------------------------------------------------------- 5. GALLERY */
+const GALLERY_FAQ = [
+  { q: 'Are these photographs of Kamakhya Temple?', a: 'No, and it is worth being straight about it. They are licensed photographs of North Indian temple architecture, chosen because they show the details the practice actually works with: shikharas, lingams, offerings, the conditions of a working shrine. They are not a record of any ceremony, and none of them shows a specific ritual performed at Kamakhya Temple or at the Mayong ashram.' },
+  { q: 'Why put up photographs at all?', a: 'Because a page about this work is otherwise entirely claims. The rest of this site is written to be checked against what is actually known about tantra in Assam, and pictures of the architecture, the offerings and the setting are the part a visitor can look at rather than take on trust. What is claimed about diagnosis, pricing and results is set out in words on the pages linked below, where it can be argued with.' },
+  { q: 'Do the pictures guarantee anything?', a: 'No. A photograph of a temple says nothing about whether a particular problem can be helped, and it should not be read as though it does. Whether your situation can be worked on is decided by reading your chart and talking to you, not by looking at a picture. Call +91 9365474087 and that conversation happens before any decision is made.' },
+  { q: 'Can I use these images on my own page?', a: 'Please do not. They are licensed stock photography, so the rights belong to the photographers and not to this practice. They are here to illustrate a page, and linking to them is fine; copying them is not.' }
+];
+
+pages.push({
+  out: 'gallery.html',
+  canonical: '/gallery.html',
+  pair: '/hi/gallery.html',
+  prefix: '',
+  lang: 'en',
+  priority: 0.7, changefreq: 'monthly',
+  title: 'Gallery | Tantra Images, Kamakhya & Mayong',
+  desc: 'Temple architecture, lingams and offerings, each with a short note on what it shows. Illustrated guide from Atul Nath, Mayong and Kamakhya.',
+  keywords: 'kamakhya temple photos, mayong tantra images, shiva lingam photo, temple architecture assam, kamakhya mandir photo, tantrik gallery, hindu temple images assam, kamakhya temple gallery',
+  ogImage: 'gallery/' + G.FEATURED + '.jpg',
+  ogImageW: 1200, ogImageH: 896,
+  businessDesc: U.BUSINESS_DESC,
+  personDesc: U.PERSON_DESC,
+  trail: [
+    { name: 'Home', href: 'index.html', url: '/' },
+    { name: 'Gallery', url: '/gallery.html' }
+  ],
+  c: chrome({ nav: NAV.map(n => n.href === 'gallery.html' ? { ...n, current: true } : n) }),
+  ctaTitle: 'The pictures are context. The call is the consultation.',
+  ctaBody: 'These images are here to show the architecture, the offerings and the setting that the work is done in. Whether your own problem can be helped is a separate question, and the first phone call is where it gets answered. It costs nothing.',
+  services: SERVICES.map(x => ({ name: x.title, url: '/' + x.file })),
+  serviceListName: 'Spiritual services from Atul Nath Aghori Tantrik in Mayong and Kamakhya Temple',
+  faqs: GALLERY_FAQ,
+  gallery: GALLERY_EN,
+  galleryName: 'Temple architecture, lingams and offerings in the tantra tradition of Assam',
+  sitemapImages: GALLERY_EN,
+  body: `${U.pagehead(Object.assign(chrome(), {
+    eyebrow: 'Illustrated',
+    h1: 'Gallery: the temples, the lingams and the offerings',
+    sub: 'Six photographs of North Indian temple architecture, each with a short note on what is actually in the frame and why it matters to the work.'
+  }))}
+
+<div class="section section--tight">
+  <div class="wrap">
+    <div class="callout">
+      <p><strong>What these are.</strong> Licensed stock photographs of North Indian temple architecture, chosen to show the specific things this practice works with. They are not photographs of Kamakhya Temple, of the Mayong ashram, or of any ceremony. Nothing on this page should be read as evidence of a result, and the captions below say what is in the frame rather than what it is claimed to have produced.</p>
+    </div>
+  </div>
+</div>
+
+${U.galleryBlock({
+  prefix: '',
+  id: 'gallery',
+  eyebrow: 'The set',
+  title: 'Six frames, and what is in them',
+  intro: 'Every image below carries its own description and a short note. The descriptions name what is actually visible, because that is the part worth knowing; the notes are the part worth arguing with.',
+  items: GALLERY_EN,
+  eagerFirst: true
+})}
+
+${U.lightbox({ prefix: '', label: 'Enlarged view of a gallery image', close: 'Close' })}
+
+<section class="section section--sunk">
+  <div class="wrap">
+    <div class="split split--top">
+      <div class="prose">
+        <span class="eyebrow">How to read these</span>
+        <h2>Three things to notice in any temple photograph</h2>
+        <p>What is fresh. Vermilion, flowers, a fresh oil lamp, wet stone around a base: these are the only details that tell you somebody was there today. Everything else in the frame is older than the person holding the camera, and no amount of it is evidence of anything that happened this week.</p>
+        <p>Where the threshold is. Old temple architecture is built to slow you down without saying so. A doorway narrows, a corridor darkens, steps rise, and by the time you reach the sanctum you have crossed several thresholds you did not consciously decide to cross. It is a built argument about attention.</p>
+        <p>What has been repeated. A single hibiscus laid across a row of lingams is a daily act, not a ceremony. Repetition is most of what the ritual is, and the reason a daily practice is given to you after a puja instead of a single instruction.</p>
+      </div>
+      <div class="prose">
+        <span class="eyebrow">Where to read next</span>
+        <h3>Pages that can be checked against the practice</h3>
+        <p><a href="about.html">About Atul Nath</a> covers the years in Mayong and at Kamakhya Temple, and what he declines to do.</p>
+        <p><a href="real-tantrik-assam.html">How to check whether a tantrik is genuine</a> sets out the questions worth asking before anyone takes your money, including the one about photographs.</p>
+        <p><a href="about-kamakhya-temple.html">About Kamakhya Temple</a> covers the temple, its tantric tradition and the practice carried on there.</p>
+        <p><a href="history-of-mayong-tantrik.html">What Mayong is famous for</a> covers why the practice in Morigaon district is centred on method and mantra rather than on spectacle.</p>
+        <div class="callout" style="margin-top:26px">
+          <p><strong>Ask before you book.</strong> A photograph of a temple cannot tell you whether your situation can be helped. A fifteen-minute phone call can, and the first one is free. Call <a href="tel:${TEL}">${PHONE}</a>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+${U.faqBlock(GALLERY_FAQ, 'About these images')}`
 });
 
 module.exports = pages;

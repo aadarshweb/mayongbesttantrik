@@ -8,6 +8,16 @@ const TEL = '+919365474087';
 const WA = '919365474087';
 const Y = 2026;
 
+/* Escapes text for use in an HTML attribute. Quotes are included because the
+   gallery block puts captions and alt text into quoted attributes, which the
+   copy in build.js (attribute-free) never had to handle. & goes first so the
+   later replacements are not double-escaped. */
+const esc = (s) => String(s)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;');
+
 const ICON = {
   phone: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.35 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.35 1.85.58 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
   pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
@@ -165,7 +175,10 @@ function ctaBand(c, title, body) {
 }
 
 function linkIndex(c) {
-  return `<section class="section section--sunk seo-links" id="services">
+  // id is 'all-pages', not 'services': the homepage gives id="services" to its
+  // own service section, and a document with the same id twice sends every
+  // #services anchor to the wrong block.
+  return `<section class="section section--sunk seo-links" id="all-pages">
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">${c.indexEyebrow}</span>
@@ -290,8 +303,65 @@ function testimonialBlock(c) {
 </section>`;
 }
 
+/* ------------------------------------------------------------- gallery */
+/* Rendered from content/gallery.js. Two things matter here beyond looks:
+
+   1. The thumbnail is a real <a href> to the full-size file, so the page
+      works with JavaScript off. js/gallery.js intercepts the click and opens
+      the <dialog> instead. Nothing on the page depends on the script.
+   2. Every <img> carries its intrinsic width and height, so the browser
+      reserves the box before the bytes arrive and the grid does not shift.
+
+   The story sits in the DOM as real text rather than inside an alt attribute,
+   which is both readable by assistive tech and indexable as body copy. */
+function galleryBlock(o) {
+  const items = o.items;
+  const id = o.id || 'gallery';
+  return `<section class="section gallery" id="${id}">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">${o.eyebrow}</span>
+      <h2>${o.title}</h2>
+      <p>${o.intro}</p>
+    </div>
+    <div class="gallery__grid">
+      ${items.map((g, i) => `<figure class="gallery__item">
+        <a class="gallery__link" href="${o.prefix}images/gallery/${g.file}"
+           data-gallery-full="${o.prefix}images/gallery/${g.file}"
+           data-gallery-caption="${esc(g.title)} &mdash; ${esc(g.story)}">
+          <img class="gallery__img" src="${o.prefix}images/gallery/${g.file}" width="${g.w}" height="${g.h}"
+               alt="${esc(g.alt)}"
+               loading="${i === 0 && o.eagerFirst ? 'eager' : 'lazy'}" decoding="async">
+        </a>
+        <figcaption class="gallery__cap">
+          <span class="gallery__n">${String(i + 1).padStart(2, '0')}</span>
+          <h3 class="gallery__title">${g.title}</h3>
+          <p class="gallery__story">${g.story}</p>
+        </figcaption>
+      </figure>`).join('\n      ')}
+    </div>
+  </div>
+</section>`;
+}
+
+/* The lightbox shell. Rendered server-side so the markup is in the HTML, but
+   left closed and empty: js/gallery.js fills it on open. <dialog> gives focus
+   trapping, Escape-to-close and an inert background for free, which is most
+   of what a hand-rolled overlay ends up reimplementing badly. */
+function lightbox(o) {
+  return `<dialog class="lightbox" data-lightbox aria-label="${esc(o.label)}">
+  <div class="lightbox__inner">
+    <img class="lightbox__img" alt="" aria-hidden="true">
+    <p class="lightbox__cap"></p>
+    <button class="lightbox__close" type="button" data-lightbox-close aria-label="${esc(o.close)}">&times;</button>
+  </div>
+</dialog>
+<script src="${o.prefix}js/gallery.js" defer></script>`;
+}
+
 module.exports = {
   PHONE, TEL, WA, Y, ICON, BUSINESS_DESC, PERSON_DESC,
   topbar, header, crumbs, hero, pagehead, stats, serviceRows, faqBlock,
-  ctaBand, linkIndex, footer, processBlock, testimonialBlock
+  ctaBand, linkIndex, footer, processBlock, testimonialBlock,
+  galleryBlock, lightbox
 };

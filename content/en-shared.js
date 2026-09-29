@@ -45,6 +45,7 @@ const NAV = [
   { href: 'about.html', label: 'About' },
   { href: 'services.html', label: 'Services' },
   { href: 'best-tantrik-mayong.html', label: 'Best Tantrik in Mayong' },
+  { href: 'gallery.html', label: 'Gallery' },
   { href: 'contact.html', label: 'Contact' }
 ];
 
@@ -106,8 +107,9 @@ function chrome(over) {
       cat: 'Background reading',
       links: [
         { url: 'history-of-mayong-tantrik.html', label: 'What Mayong is famous for, and why' },
-        { url: 'about-kamakhya-temple.html', label: 'About Kamakhya Temple and its tantrik tradition' },
+        { url: 'about-kamakhya-temple.html', label: 'About Kamakhya Temple and its tantric tradition' },
         { url: 'real-tantrik-assam.html', label: 'How to check whether a tantrik is genuine' },
+        { url: 'gallery.html', label: 'Gallery: temples, lingams and offerings' },
         { url: 'about.html', label: 'About Atul Nath and his years of practice' }
       ]
     }]),
@@ -118,13 +120,15 @@ function chrome(over) {
       { url: 'index.html', label: 'Home' },
       { url: 'about.html', label: 'About Atul Nath' },
       { url: 'services.html', label: 'All ' + SERVICES.length + ' services' },
+      { url: 'gallery.html', label: 'Gallery' },
       { url: 'contact.html', label: 'Contact and locations' }
     ],
     footerGuides: 'All services',
     footerGuidesList: SERVICES.map(s => ({ url: s.file, label: s.short })).concat([
       { url: 'history-of-mayong-tantrik.html', label: 'Mayong history' },
       { url: 'about-kamakhya-temple.html', label: 'About Kamakhya Temple' },
-      { url: 'real-tantrik-assam.html', label: 'Finding a real tantrik' }
+      { url: 'real-tantrik-assam.html', label: 'Finding a real tantrik' },
+      { url: 'gallery.html', label: 'Gallery' }
     ]),
     footerContact: 'Contact',
     mapCaption: 'Kamakhya Temple, Malakhuwa, Guwahati, Assam 781010. Mayong ashram, Morigaon, Assam 782411, is about 40 km from here.',
