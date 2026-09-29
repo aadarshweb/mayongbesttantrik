@@ -4,6 +4,16 @@ const path = require('path');
 let fail = 0;
 const bad = (m) => { console.log('  FAIL: ' + m); fail++; };
 
+// Inverse of build.js clean(): a public URL back to the file on disk that
+// serves it. Cloudflare serves /about from about.html, so the extensionless
+// form is the canonical one and this has to undo that to stat the file.
+const toRel = (url) => {
+  const r = url.replace('https://mayongbesttantrik.com', '');
+  if (r === '' || r === '/') return 'index.html';
+  if (r.endsWith('/')) return r.slice(1) + 'index.html';
+  return r.replace(/^\//, '') + '.html';
+};
+
 // 1. every JSON-LD block parses
 const pages = [];
 for (const f of fs.readdirSync(__dirname)) if (f.endsWith('.html')) pages.push(f);
@@ -35,7 +45,7 @@ console.log('   sitemap: ' + locs.length + ' urls, ' + (sm.match(/<xhtml:link/g)
 if (locs.length !== pages.length - 1) bad('sitemap has ' + locs.length + ' urls but there are ' + (pages.length - 1) + ' indexable pages');
 if (sm.includes('404')) bad('404 in sitemap');
 for (const l of locs) {
-  const rel = l.replace('https://mayongbesttantrik.com', '').replace(/^\//, '') || 'index.html';
+  const rel = toRel(l);
   if (!pages.includes(rel)) bad('sitemap url not on disk: ' + l);
 }
 
@@ -119,22 +129,19 @@ console.log('   ' + defined.size + ' custom props, ' + usedClasses.size + ' clas
   const onDisk = new Set();
   for (const f of fs.readdirSync(__dirname)) if (f.endsWith('.html')) onDisk.add(f);
   for (const f of fs.readdirSync(path.join(__dirname, 'hi'))) if (f.endsWith('.html')) onDisk.add('hi/' + f);
-  const toRel = (url) => {
-    const r = url.replace('https://mayongbesttantrik.com', '').replace(/^\//, '');
-    return r === '' ? 'index.html' : r;
-  };
+  const toRelLocal = toRel;
   let n = 0;
   for (const f of pages) {
     for (const m of fs.readFileSync(path.join(__dirname, f), 'utf8')
       .matchAll(/<link rel="alternate" hreflang="[\w-]+" href="([^"]+)"/g)) {
       n++;
-      const rel = toRel(m[1]);
+      const rel = toRelLocal(m[1]);
       if (!onDisk.has(rel)) bad('dangling hreflang in ' + f + ' -> ' + m[1]);
     }
   }
   for (const m of sm.matchAll(/xhtml:link rel="alternate" hreflang="[\w-]+" href="([^"]+)"/g)) {
     n++;
-    const rel = toRel(m[1]);
+    const rel = toRelLocal(m[1]);
     if (!onDisk.has(rel)) bad('dangling sitemap alternate -> ' + m[1]);
   }
   console.log('   ' + n + ' hreflang targets, all resolve');
@@ -161,8 +168,29 @@ for (const term of ['Awaken Your Destiny', 'Divine Testimonials', 'Lives Transfo
   if (all.includes(term)) bad('AI-slop copy still present: ' + term);
 }
 
-// 6. encoding integrity
-console.log('6. encoding');
+// 5e. no emitted URL may carry an .html suffix. This is the exact regression
+// that emptied the site's canonical signal: Cloudflare answers /about.html
+// with a 307 to /about, and Google discards a canonical or sitemap entry that
+// resolves to a redirect. The build now rewrites these, so any .html turning
+// back up means a new emission site was added without running it through
+// clean()/abs().
+console.log('6. extensionless URLs');
+{
+  const leaks = [];
+  for (const f of pages.concat(['sitemap.xml'])) {
+    const h = fs.readFileSync(path.join(__dirname, f), 'utf8');
+    for (const m of h.matchAll(/(?:href|content)="(https:\/\/mayongbesttantrik\.com[^"]*\.html)"/g)) leaks.push(f + ' -> ' + m[1]);
+    for (const m of h.matchAll(/<loc>([^<]*\.html)<\/loc>/g)) leaks.push(f + ' -> ' + m[1]);
+  }
+  if (leaks.length) {
+    bad(leaks.length + ' emitted URL(s) still carry .html, which 307s:\n     ' +
+      [...new Set(leaks)].slice(0, 8).join('\n     '));
+  }
+  console.log('   ' + pages.length + ' pages + sitemap, no .html in canonical/og/hreflang/loc');
+}
+
+// 7. encoding integrity
+console.log('7. encoding');
 for (const f of pages.concat(['robots.txt', 'sitemap.xml', 'manifest.json', 'js/script.js', 'css/style.css'])) {
   const buf = fs.readFileSync(path.join(__dirname, f));
   const txt = buf.toString('utf8');

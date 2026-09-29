@@ -34,14 +34,48 @@ const YEAR = 2026;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const jsonLd = (o) => `<script type="application/ld+json">\n${JSON.stringify(o, null, 2)}\n</script>`;
 
+/* ------------------------------------------------------------------- urls */
+/* Cloudflare serves the extensionless form: /about returns 200, while
+   /about.html answers with a 307 to /about. So the clean URL is the only one
+   that is a fetchable document, and it is the one that must appear in
+   canonical, hreflang, og, schema, sitemap and internal links. Pointing
+   canonical at the .html form is worse than having none - Google discards a
+   canonical that resolves to a redirect, which is what left this site with
+   no canonical signal at all.
+
+   Pages are still WRITTEN as physical .html files (p.out is the filename on
+   disk); clean() only governs what a visitor and a crawler are told to use. */
+const clean = (u) => {
+  if (!u) return u;
+  const [path, hash] = u.split('#');
+  const slash = path.lastIndexOf('/');
+  const dir = path.slice(0, slash + 1);
+  const file = path.slice(slash + 1);
+  const name = file === 'index.html' ? '' : file.replace(/\.html$/, '');
+  return dir + name + (hash ? '#' + hash : '');
+};
+const abs = (u) => `${DOMAIN}${clean(u)}`;
+
+/* The content modules author internal links as physical filenames
+   (/about.html, ../index.html, hi/about.html) - roughly 450 of them. Rewriting
+   them by hand is a silent-typo risk, so the finished document is swept once
+   instead. Only href/src are touched, and only when the value has no scheme
+   and is not an anchor, so tel:, mailto:, https://, //cdn and #main survive. */
+const cleanLinks = (html) => html.replace(
+  /\b(href|src)="([^"]*)"/g,
+  (m, attr, val) => (/^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(val) ? m : `${attr}="${clean(val)}"`)
+);
+
 /* ------------------------------------------------------------------ head */
 function head(p) {
-  const url = p.canonical === '/' ? `${DOMAIN}/` : `${DOMAIN}${p.canonical}`;
+  const url = abs(p.canonical);
   const hi = p.lang === 'hi';
+  // p.pair is the other language's physical path. The Hindi homepage pairs
+  // with the English root, not with /hi/, so that one case stays special.
   const enUrl = hi
-    ? (p.pair === '/hi/index.html' ? `${DOMAIN}/` : `${DOMAIN}${p.pair}`)
+    ? (p.pair === '/hi/index.html' ? `${DOMAIN}/` : abs(p.pair))
     : url;
-  const hiUrl = hi ? url : (p.pair ? `${DOMAIN}${p.pair}` : '');
+  const hiUrl = hi ? url : (p.pair ? abs(p.pair) : '');
 
   const hreflang = [
     `<link rel="alternate" hreflang="en" href="${enUrl}" />`,
@@ -108,7 +142,7 @@ function schemas(p) {
     description: p.businessDesc,
     telephone: UI.PHONE,
     email: 'atulnath@mayongbesttantrik.com',
-    url: p.lang === 'hi' && p.canonical !== '/' ? `${DOMAIN}${p.canonical}` : `${DOMAIN}/`,
+    url: p.lang === 'hi' && p.canonical !== '/' ? abs(p.canonical) : `${DOMAIN}/`,
     priceRange: 'Rs-Rs',
     currenciesAccepted: 'INR',
     paymentAccepted: 'Cash, UPI, Bank Transfer',
@@ -150,7 +184,7 @@ function schemas(p) {
         '@type': 'ListItem',
         position: i + 1,
         name: c.name,
-        item: c.url === '/' ? `${DOMAIN}/` : `${DOMAIN}${c.url}`
+        item: abs(c.url)
       }))
     });
   }
@@ -185,7 +219,7 @@ function schemas(p) {
       alternateName: ['Atul Nath Aghori Baba', 'Atulnath Tantrik'],
       jobTitle: 'Aghori Tantrik Baba and Vedic Astrologer',
       description: p.personDesc,
-      url: `${DOMAIN}/about.html`,
+      url: abs('/about.html'),
       telephone: UI.PHONE,
       email: 'atulnath@mayongbesttantrik.com',
       knowsAbout: ['Tantra Shastra', 'Kamakhya Tantrik Vidya', 'Mayong Tantra', 'Vedic Astrology', 'Vashikaran', 'Black Magic Removal', 'Spiritual Healing'],
@@ -212,7 +246,7 @@ function schemas(p) {
         '@id': `${DOMAIN}/#business`,
         logo: { '@type': 'ImageObject', url: `${DOMAIN}/images/logo.png` }
       },
-      mainEntityOfPage: { '@type': 'WebPage', '@id': `${DOMAIN}${p.canonical === '/' ? '/' : p.canonical}` }
+      mainEntityOfPage: { '@type': 'WebPage', '@id': abs(p.canonical) }
     });
   }
 
@@ -225,7 +259,7 @@ function schemas(p) {
         '@type': 'ListItem',
         position: i + 1,
         name: s.name,
-        url: `${DOMAIN}${s.url}`
+        url: abs(s.url)
       }))
     });
   }
@@ -255,7 +289,7 @@ function schemas(p) {
       '@id': `${DOMAIN}/#gallery`,
       name: p.galleryName,
       description: p.desc,
-      url: p.canonical === '/' ? `${DOMAIN}/` : `${DOMAIN}${p.canonical}`,
+      url: abs(p.canonical),
       numberOfItems: p.gallery.length,
       associatedMedia: p.gallery.map(g => ({
         '@type': 'ImageObject',
@@ -274,7 +308,7 @@ function schemas(p) {
 
 /* ----------------------------------------------------------------- render */
 function render(p) {
-  return `<!DOCTYPE html>
+  return cleanLinks(`<!DOCTYPE html>
 <html lang="${p.lang}" dir="ltr">
 <head>
   ${head(p)}
@@ -293,7 +327,7 @@ ${p.body}
   ${UI.footer(p.c)}
 </body>
 </html>
-`;
+`);
 }
 
 /* ------------------------------------------------------------------ build */
@@ -325,7 +359,9 @@ fs.mkdirSync(path.join(ROOT, 'hi'), { recursive: true });
 for (const p of HI) { record(p, 'hi/' + p.out, 'hi'); fs.writeFileSync(path.join(ROOT, 'hi', p.out), render(p), 'utf8'); }
 
 /* --------------------------------------------------------------- sitemap */
-const loc = (u) => (u === '/' ? `${DOMAIN}/` : `${DOMAIN}${u}`);
+/* Single choke point for every URL the sitemap prints, so <loc> and the
+   hreflang alternates cannot drift apart. */
+const loc = (u) => (u ? abs(u) : '');
 
 const urls = written
   .filter(u => u.out !== '404.html')
