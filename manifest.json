@@ -1,0 +1,35 @@
+{
+  "name": "Atul Nath Aghori Tantrik",
+  "short_name": "Atul Nath",
+  "description": "Best tantrik in Kamakhya Temple and Mayong, Assam. Black magic removal, vashikaran, love problem solutions and Vedic astrology.",
+  "lang": "en",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "orientation": "portrait",
+  "theme_color": "#08191d",
+  "background_color": "#08191d",
+  "categories": [
+    "lifestyle",
+    "health"
+  ],
+  "icons": [
+    {
+      "src": "/favicon-48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
