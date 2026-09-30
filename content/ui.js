@@ -50,9 +50,13 @@ function topbar(c) {
 }
 
 function header(c) {
+  // index.html, not ${c.prefix}index.html: the logo must return to the home
+  // page of the language being read, and c.prefix is '../' under /hi/, which
+  // pointed the logo on all 25 Hindi pages at the English root. build.js
+  // rewrites a bare index.html to that language's home.
   return `<header class="site-header" id="site-header">
   <div class="header__inner">
-    <a class="brand" href="${c.prefix}index.html">
+    <a class="brand" href="index.html">
       <img src="${c.prefix}images/logo.png" width="320" height="320" alt="Atul Nath Aghori Tantrik logo, Sri Yantra and Trishul emblem">
       <span class="brand__text">
         <span class="brand__name">${c.brandName}</span>
@@ -115,7 +119,7 @@ function pagehead(c) {
     <p class="pagehead__sub">${c.sub}</p>
     <div class="pagehead__cta btn-row">
       <a class="btn btn--primary" href="tel:${TEL}">${c.callNow} ${PHONE}</a>
-      <a class="btn btn--ghost" href="${c.prefix}contact.html">${c.contactCta}</a>
+      <a class="btn btn--ghost" href="contact.html">${c.contactCta}</a>
     </div>
   </div>
 </section>`;
@@ -198,6 +202,27 @@ function linkIndex(c) {
 const MAP_SRC = 'https://www.google.com/maps?q=Kamakhya+Temple,+Malakhuwa,+Guwahati,+Assam+781010&output=embed';
 const MAP_LINK = 'https://www.google.com/maps/search/?api=1&query=Kamakhya+Temple+Malakhuwa+Guwahati+Assam+781010';
 
+/* The legal row under the footer. Two things it has to do.
+
+   It reuses .taglist rather than introducing a .footer__legal class, because
+   verify.js fails the build on any class used in the HTML that has no rule in
+   style.css. The pill row is already styled and already sits directly above
+   this, so it reads as one block of small links rather than two competing ones.
+
+   It is driven by c.legalLinks rather than hard-coded, because the four legal
+   pages are English-only. The Hindi chrome passes an empty list and the row
+   disappears, which is what stops the Hindi footer from linking across into
+   English pages - something verify.js check 6b treats as a cross-language link
+   and fails on. These pages are noindex and out of the sitemap, so this row is
+   also their only route to being crawled: it is on all 25 English pages, which
+   is what keeps them from being orphans. */
+function legalRow(c) {
+  if (!c.legalLinks || !c.legalLinks.length) return '';
+  return `    <div class="taglist">
+      ${c.legalLinks.map(l => `<a href="${l.url}">${l.label}</a>`).join('\n      ')}
+    </div>`;
+}
+
 function footer(c) {
   return `<section class="section section--tight" style="padding-bottom:0">
   <div class="wrap">
@@ -222,9 +247,12 @@ function footer(c) {
         <h4>${c.footerAbout}</h4>
         <p>${c.footerAboutBody}</p>
         <div class="taglist">
-          <a href="${c.prefix}best-tantrik-mayong.html">${c.tag1}</a>
-          <a href="${c.prefix}black-magic-removal-kamakhya.html">${c.tag2}</a>
-          <a href="${c.prefix}vashikaran-specialist-mayong.html">${c.tag3}</a>
+          <!-- No ${c.prefix} here: these are page links, not assets. c.prefix is
+               '../' under /hi/ so that css, js and images resolve, and reusing
+               it for links threw the Hindi chrome back to the English pages. -->
+          <a href="best-tantrik-mayong.html">${c.tag1}</a>
+          <a href="black-magic-removal-kamakhya.html">${c.tag2}</a>
+          <a href="vashikaran-specialist-mayong.html">${c.tag3}</a>
         </div>
       </div>
       <div>
@@ -252,8 +280,9 @@ function footer(c) {
     </div>
     <div class="footer__bottom">
       <p>&copy; ${Y} ${c.rightsName}. ${c.rights}</p>
-      <p><a href="${c.prefix}contact.html">${c.footerContact}</a> &middot; <a href="/sitemap.xml">Sitemap</a></p>
+      <p><a href="contact.html">${c.footerContact}</a> &middot; <a href="/sitemap.xml">Sitemap</a></p>
     </div>
+${legalRow(c)}
   </div>
 </footer>
 

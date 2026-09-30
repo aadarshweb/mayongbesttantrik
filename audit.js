@@ -66,11 +66,16 @@ for (const f of files) {
   if (!is404 && robots.indexOf('index') === -1) add('no index directive');
   if (new Set(internal).size < 8) add('only ' + new Set(internal).size + ' internal page links');
   if (!is404 && new Set(kw.split(',').map(s => s.trim())).size < 6) add('fewer than 6 keywords');
-  // hreflang must be reciprocal
+  // hreflang must be reciprocal. Skipped on noindex pages, and deliberately so:
+  // build.js emits no hreflang when p.noindex is set, because a language
+  // alternate for a page that asks not to be indexed is a contradiction. The
+  // four legal pages are English-only for exactly this reason - see
+  // content/en-legal.js.
+  const noindex = robots.indexOf('noindex') !== -1;
   const hl = [...h.matchAll(/<link rel="alternate" hreflang="([\w-]+)"/g)].map(m => m[1]);
-  if (!is404 && !hl.includes('en')) add('no hreflang en');
-  if (!is404 && !hl.includes('hi')) add('no hreflang hi');
-  if (!is404 && !hl.includes('x-default')) add('no hreflang x-default');
+  if (!is404 && !noindex && !hl.includes('en')) add('no hreflang en');
+  if (!is404 && !noindex && !hl.includes('hi')) add('no hreflang hi');
+  if (!is404 && !noindex && !hl.includes('x-default')) add('no hreflang x-default');
 
   // mojibake / encoding corruption check
   const bad = h.match(/[\u00C2-\u00E0][\u0080-\u00BF]|â€|Ã[\u0080-\u00BF]/g);

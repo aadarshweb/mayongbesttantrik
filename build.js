@@ -13,7 +13,8 @@ const EN = [].concat(
   require('./content/en-deep.js'),
   require('./content/en-services-a.js'),
   require('./content/en-services-b.js'),
-  require('./content/en-guides.js')
+  require('./content/en-guides.js'),
+  require('./content/en-legal.js')
 );
 const HI = [].concat(
   require('./content/hi.js').filter(p => p && p.out),
@@ -52,7 +53,12 @@ const clean = (u) => {
   const dir = path.slice(0, slash + 1);
   const file = path.slice(slash + 1);
   const name = file === 'index.html' ? '' : file.replace(/\.html$/, '');
-  return dir + name + (hash ? '#' + hash : '');
+  // A bare index.html must not clean to the empty string. href="" is resolved
+  // against the current URL, so the header logo and the footer "Home" link were
+  // self-links on every page - the logo on an English page never reached the
+  // homepage at all. The directory form is the real target and is unambiguous
+  // at any nesting depth.
+  return (dir + name || '/') + (hash ? '#' + hash : '');
 };
 const abs = (u) => `${DOMAIN}${clean(u)}`;
 
@@ -61,9 +67,20 @@ const abs = (u) => `${DOMAIN}${clean(u)}`;
    them by hand is a silent-typo risk, so the finished document is swept once
    instead. Only href/src are touched, and only when the value has no scheme
    and is not an anchor, so tel:, mailto:, https://, //cdn and #main survive. */
-const cleanLinks = (html) => html.replace(
+const cleanLinks = (html, lang) => html.replace(
   /\b(href|src)="([^"]*)"/g,
-  (m, attr, val) => (/^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(val) ? m : `${attr}="${clean(val)}"`)
+  (m, attr, val) => {
+    if (/^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(val)) return m;
+    // A bare index.html means "the home page of the language this page is
+    // written in" - that is how both NAV lists and both footers are authored.
+    // Left to clean() it collapses to the empty string, and href="" resolves
+    // against the current URL, so the logo and the Home entries were self-links
+    // on all 51 pages; flattened to "/" instead, the ones under /hi/ would walk
+    // a Hindi reader out to the English homepage. Root-relative, per language,
+    // is the only form that is right in every case.
+    if (val === 'index.html') return `${attr}="${lang === 'hi' ? '/hi/' : '/'}"`;
+    return `${attr}="${clean(val)}"`;
+  }
 );
 
 /* ------------------------------------------------------------------ head */
@@ -327,7 +344,7 @@ ${p.body}
   ${UI.footer(p.c)}
 </body>
 </html>
-`);
+`, p.lang);
 }
 
 /* ------------------------------------------------------------------ build */
@@ -348,6 +365,12 @@ const record = (p, out, lang) => {
     out, lang, canon,
     en: enUrl,
     hi: hiUrl,
+    // Carried through so the sitemap can exclude noindex pages generically
+    // rather than by hard-coding '404.html'. Listing a noindex URL in a
+    // sitemap is a contradiction Google is entitled to resolve either way, and
+    // a privacy policy or a terms page has no search demand to lose by staying
+    // out - the footer still links it on every page, so it is still crawled.
+    noindex: !!p.noindex,
     priority: p.priority || 0.8,
     changefreq: p.changefreq || 'monthly',
     images: p.sitemapImages || null
@@ -364,7 +387,7 @@ for (const p of HI) { record(p, 'hi/' + p.out, 'hi'); fs.writeFileSync(path.join
 const loc = (u) => (u ? abs(u) : '');
 
 const urls = written
-  .filter(u => u.out !== '404.html')
+  .filter(u => !u.noindex)
   .sort((a, b) => b.priority - a.priority)
   .map(u => {
     const alts = [

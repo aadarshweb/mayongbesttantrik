@@ -84,7 +84,12 @@ function chrome(over) {
   return Object.assign({
     prefix: '',
     lang: 'en',
-    langHref: 'hi/index.html',
+    // Root-relative, not the relative "hi/". Relative resolution against
+  // /about happens to give /hi/ because no URL carries a trailing slash; the
+  // moment one does, the same href becomes /about/hi/ and 404s. The Hindi
+  // homepage is reachable from here on every one of the 25 English pages, so
+  // it is worth not resting on that.
+  langHref: '/hi/index.html',
     brandName: 'Atul Nath',
     brandTag: 'Aghori Tantrik Baba',
     topLoc: 'Mayong, Morigaon &nbsp;&middot;&nbsp; Kamakhya Temple, Guwahati',
@@ -124,13 +129,28 @@ function chrome(over) {
       { url: 'contact.html', label: 'Contact and locations' }
     ],
     footerGuides: 'All services',
+    // tantrik-baba-guwahati is a money page but is not in SERVICES, so nothing
+    // linked to it: it was the one indexable page on the site with no inbound
+    // internal link at all. Listed here rather than added to SERVICES, which
+    // would also change the count in the services page and the schema.
     footerGuidesList: SERVICES.map(s => ({ url: s.file, label: s.short })).concat([
+      { url: 'best-tantrik-mayong.html', label: 'Best tantrik in Mayong' },
+      { url: 'tantrik-baba-guwahati.html', label: 'Best tantrik baba Guwahati' },
       { url: 'history-of-mayong-tantrik.html', label: 'Mayong history' },
       { url: 'about-kamakhya-temple.html', label: 'About Kamakhya Temple' },
       { url: 'real-tantrik-assam.html', label: 'Finding a real tantrik' },
       { url: 'gallery.html', label: 'Gallery' }
     ]),
     footerContact: 'Contact',
+    /* English only. These four are noindex and out of the sitemap, so the
+       footer is the only thing that gets them crawled - which is also why
+       every one of the 25 English pages carries this row. */
+    legalLinks: [
+      { url: 'privacy-policy.html', label: 'Privacy Policy' },
+      { url: 'terms.html', label: 'Terms and Conditions' },
+      { url: 'disclaimer.html', label: 'Disclaimer' },
+      { url: 'developer-declaration.html', label: 'Developer Declaration' }
+    ],
     mapCaption: 'Kamakhya Temple, Malakhuwa, Guwahati, Assam 781010. Mayong ashram, Morigaon, Assam 782411, is about 40 km from here.',
     tag1: 'Best tantrik in Mayong',
     tag2: 'Black magic removal Kamakhya',

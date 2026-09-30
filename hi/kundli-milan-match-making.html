@@ -311,7 +311,7 @@
 </div>
   <header class="site-header" id="site-header">
   <div class="header__inner">
-    <a class="brand" href="../">
+    <a class="brand" href="/hi/">
       <img src="../images/logo.png" width="320" height="320" alt="Atul Nath Aghori Tantrik logo, Sri Yantra and Trishul emblem">
       <span class="brand__text">
         <span class="brand__name">अतुल नाथ</span>
@@ -321,21 +321,21 @@
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu" data-nav-toggle><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
     <nav class="nav" id="primary-nav" aria-label="Primary">
       <div class="nav__links">
-        <a href="">होम</a>
+        <a href="/hi/">होम</a>
         <a href="services" aria-current="page">सेवाएं</a>
         <a href="best-tantrik-mayong">मायोंग तांत्रिक</a>
         <a href="gallery">गैलरी</a>
         <a href="contact">संपर्क</a>
       </div>
       <div class="nav__tools">
-        <a class="lang-link" href="../" hreflang="en" lang="en">English</a>
+        <a class="lang-link" href="/" hreflang="en" lang="en">English</a>
         <a class="btn btn--primary btn--sm" href="tel:+919365474087">अभी कॉल करें</a>
       </div>
     </nav>
   </div>
 </header>
   <nav class="crumbs" aria-label="Breadcrumb"><ol>
-  <li><a href="">होम</a></li>
+  <li><a href="/hi/">होम</a></li>
   <li><span aria-current="page">कुंडली मिलान</span></li>
 </ol></nav>
   <main id="main">
@@ -347,7 +347,7 @@
     <p class="pagehead__sub">दोनों कुंडलियां ठीक से तुलना, दोष मिलान, और विवाह की तारीख कैलेंडर से नहीं बल्कि दोनों कुंडलियों से चुनी गई।</p>
     <div class="pagehead__cta btn-row">
       <a class="btn btn--primary" href="tel:+919365474087">अभी कॉल करें +91 9365474087</a>
-      <a class="btn btn--ghost" href="../contact">कॉल बैकअप मांगें</a>
+      <a class="btn btn--ghost" href="contact">कॉल बैकअप मांगें</a>
     </div>
   </div>
 </section>
@@ -443,7 +443,7 @@
     <div class="linkindex">
       <div class="linkindex__row">
         <div class="linkindex__cat">काला जादू और सुरक्षा</div>
-        <ul><li><a href="black-magic-removal-kamakhya">कामाख्या मंदिर पर काला जादू टोना हटाना</a></li><li><a href="../real-tantrik-assam">असली तांत्रिक कैसे पहचानें</a></li></ul>
+        <ul><li><a href="black-magic-removal-kamakhya">कामाख्या मंदिर पर काला जादू टोना हटाना</a></li><li><a href="asan-me-sachcha-tantrik">असली तांत्रिक कैसे पहचानें</a></li></ul>
       </div>
       <div class="linkindex__row">
         <div class="linkindex__cat">प्रेम और विवाह</div>
@@ -455,7 +455,7 @@
       </div>
       <div class="linkindex__row">
         <div class="linkindex__cat">जानकारी</div>
-        <ul><li><a href="../about-kamakhya-temple">कामाख्या मंदिर के बारे में जानकारी</a></li><li><a href="gallery">गैलरी: मंदिर, शिवलिंग और पूजा</a></li><li><a href="../about">अतुल नाथ के बारे में</a></li></ul>
+        <ul><li><a href="kamakhya-mandir">कामाख्या मंदिर के बारे में जानकारी</a></li><li><a href="gallery">गैलरी: मंदिर, शिवलिंग और पूजा</a></li><li><a href="about">अतुल नाथ के बारे में</a></li></ul>
       </div>
     </div>
   </div>
@@ -483,17 +483,20 @@
         <h4>अतुल नाथ</h4>
         <p>मुरिगांव जिले के मायोंग और गुवाहाटी के कामाख्या मंदिर से कार्यरत अघोरी तांत्रिक और वैदिक ज्योतिषी। मायोंग में 17 वर्ष, कामाख्या में 9 वर्ष की साधना। पहली सलाह निःशुल्क।</p>
         <div class="taglist">
-          <a href="../best-tantrik-mayong">मायोंग में सबसे अच्छा तांत्रिक</a>
-          <a href="../black-magic-removal-kamakhya">कामाख्या काला जादू टोना</a>
-          <a href="../vashikaran-specialist-mayong">वशीकरण विशेषज्ञ</a>
+          <!-- No ../ here: these are page links, not assets. c.prefix is
+               '../' under /hi/ so that css, js and images resolve, and reusing
+               it for links threw the Hindi chrome back to the English pages. -->
+          <a href="best-tantrik-mayong">मायोंग में सबसे अच्छा तांत्रिक</a>
+          <a href="black-magic-removal-kamakhya">कामाख्या काला जादू टोना</a>
+          <a href="vashikaran-specialist-mayong">वशीकरण विशेषज्ञ</a>
         </div>
       </div>
       <div>
         <h4>मुख्य पेज</h4>
         <ul>
-          <li><a href="">होम</a></li>
+          <li><a href="/hi/">होम</a></li>
           <li><a href="services">सभी सेवाएं</a></li>
-          <li><a href="../about">अतुल नाथ के बारे में</a></li>
+          <li><a href="about">अतुल नाथ के बारे में</a></li>
           <li><a href="gallery">गैलरी</a></li>
           <li><a href="contact">संपर्क और पता</a></li>
         </ul>
@@ -501,14 +504,26 @@
       <div>
         <h4>सेवाएं और जानकारी</h4>
         <ul>
-          <li><a href="best-tantrik-mayong">मायोंग में सबसे अच्छा तांत्रिक</a></li>
           <li><a href="black-magic-removal-kamakhya">कामाख्या काला जादू टोना</a></li>
+          <li><a href="dosha-correction-kamakhya">दोष निवारण</a></li>
+          <li><a href="pandit-and-puja-booking-kamakhya">पूजा और पंडित बुकिंग</a></li>
           <li><a href="love-problem-solution-kamakhya">प्रेम समस्या हल</a></li>
-          <li><a href="vashikaran-specialist-mayong">वशीकरण विशेषज्ञ</a></li>
+          <li><a href="lost-love-recovery-kamakhya">प्रेम वापसी</a></li>
+          <li><a href="relationship-solution-kamakhya">रिश्ता समाधान</a></li>
           <li><a href="husband-wife-dispute-mayong">पति-पत्नी विवाद</a></li>
+          <li><a href="kundli-milan-match-making">कुंडली मिलान</a></li>
+          <li><a href="vashikaran-specialist-mayong">वशीकरण विशेषज्ञ</a></li>
+          <li><a href="business-problem-solution-mayong">व्यापार समस्या हल</a></li>
+          <li><a href="career-and-job-astrology-guwahati">करियर और नौकरी</a></li>
+          <li><a href="vastu-consultation-guwahati">वास्तु परामर्श</a></li>
+          <li><a href="child-birth-and-putra-santan">संतान और पुत्र संतान</a></li>
+          <li><a href="court-case-and-legal-aid-guwahati">मुकदमा और कानूनी</a></li>
+          <li><a href="name-correction-and-numerology">नाम सुधार और अंकशास्त्र</a></li>
+          <li><a href="best-tantrik-mayong">मायोंग में सबसे अच्छा तांत्रिक</a></li>
           <li><a href="tantrik-baba-guwahati">गुवाहाटी तांत्रिक बाबा</a></li>
-          <li><a href="../about-kamakhya-temple">कामाख्या मंदिर के बारे में</a></li>
-          <li><a href="../history-of-mayong-tantrik">मायोंग का इतिहास</a></li>
+          <li><a href="mayong-itihas">मायोंग का इतिहास</a></li>
+          <li><a href="kamakhya-mandir">कामाख्या मंदिर के बारे में</a></li>
+          <li><a href="asan-me-sachcha-tantrik">असली तांत्रिक कैसे पहचानें</a></li>
           <li><a href="gallery">गैलरी</a></li>
         </ul>
       </div>
@@ -525,8 +540,9 @@
     </div>
     <div class="footer__bottom">
       <p>&copy; 2026 अतुल नाथ अघोरी तांत्रिक. सर्वाधिकार सुरक्षित।</p>
-      <p><a href="../contact">संपर्क</a> &middot; <a href="/sitemap.xml">Sitemap</a></p>
+      <p><a href="contact">संपर्क</a> &middot; <a href="/sitemap.xml">Sitemap</a></p>
     </div>
+
   </div>
 </footer>
 

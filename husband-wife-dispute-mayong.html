@@ -213,7 +213,7 @@
 </div>
   <header class="site-header" id="site-header">
   <div class="header__inner">
-    <a class="brand" href="">
+    <a class="brand" href="/">
       <img src="images/logo.png" width="320" height="320" alt="Atul Nath Aghori Tantrik logo, Sri Yantra and Trishul emblem">
       <span class="brand__text">
         <span class="brand__name">Atul Nath</span>
@@ -223,7 +223,7 @@
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu" data-nav-toggle><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
     <nav class="nav" id="primary-nav" aria-label="Primary">
       <div class="nav__links">
-        <a href="">Home</a>
+        <a href="/">Home</a>
         <a href="about">About</a>
         <a href="services" aria-current="page">Services</a>
         <a href="best-tantrik-mayong">Best Tantrik in Mayong</a>
@@ -231,14 +231,14 @@
         <a href="contact">Contact</a>
       </div>
       <div class="nav__tools">
-        <a class="lang-link" href="hi/" hreflang="hi" lang="hi">हिन्दी</a>
+        <a class="lang-link" href="/hi/" hreflang="hi" lang="hi">हिन्दी</a>
         <a class="btn btn--primary btn--sm" href="tel:+919365474087">Call now</a>
       </div>
     </nav>
   </div>
 </header>
   <nav class="crumbs" aria-label="Breadcrumb"><ol>
-  <li><a href="">Home</a></li>
+  <li><a href="/">Home</a></li>
   <li><span aria-current="page">Husband wife dispute solution in Mayong</span></li>
 </ol></nav>
   <main id="main">
@@ -437,6 +437,9 @@
         <h4>Atul Nath</h4>
         <p>Aghori tantrik and Vedic astrologer working from Mayong in Morigaon district and Kamakhya Temple in Guwahati. Seventeen years in Mayong, nine years of sadhana at Kamakhya. The first consultation is free and confidential.</p>
         <div class="taglist">
+          <!-- No  here: these are page links, not assets. c.prefix is
+               '../' under /hi/ so that css, js and images resolve, and reusing
+               it for links threw the Hindi chrome back to the English pages. -->
           <a href="best-tantrik-mayong">Best tantrik in Mayong</a>
           <a href="black-magic-removal-kamakhya">Black magic removal Kamakhya</a>
           <a href="vashikaran-specialist-mayong">Vashikaran specialist Mayong</a>
@@ -445,7 +448,7 @@
       <div>
         <h4>Main pages</h4>
         <ul>
-          <li><a href="">Home</a></li>
+          <li><a href="/">Home</a></li>
           <li><a href="about">About Atul Nath</a></li>
           <li><a href="services">All 15 services</a></li>
           <li><a href="gallery">Gallery</a></li>
@@ -470,6 +473,8 @@
           <li><a href="child-birth-and-putra-santan">Child birth &amp; putra santan</a></li>
           <li><a href="court-case-and-legal-aid-guwahati">Court case &amp; legal aid</a></li>
           <li><a href="name-correction-and-numerology">Name correction &amp; numerology</a></li>
+          <li><a href="best-tantrik-mayong">Best tantrik in Mayong</a></li>
+          <li><a href="tantrik-baba-guwahati">Best tantrik baba Guwahati</a></li>
           <li><a href="history-of-mayong-tantrik">Mayong history</a></li>
           <li><a href="about-kamakhya-temple">About Kamakhya Temple</a></li>
           <li><a href="real-tantrik-assam">Finding a real tantrik</a></li>
@@ -490,6 +495,12 @@
     <div class="footer__bottom">
       <p>&copy; 2026 Atul Nath Aghori Tantrik. All rights reserved.</p>
       <p><a href="contact">Contact</a> &middot; <a href="/sitemap.xml">Sitemap</a></p>
+    </div>
+    <div class="taglist">
+      <a href="privacy-policy">Privacy Policy</a>
+      <a href="terms">Terms and Conditions</a>
+      <a href="disclaimer">Disclaimer</a>
+      <a href="developer-declaration">Developer Declaration</a>
     </div>
   </div>
 </footer>

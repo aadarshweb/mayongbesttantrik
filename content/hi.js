@@ -36,7 +36,7 @@ function chrome(over) {
   return Object.assign({
     prefix: '../',
     lang: 'hi',
-    langHref: '../index.html',
+    langHref: '/index.html',
     brandName: 'अतुल नाथ',
     brandTag: 'अघोरी तांत्रिक बाबा',
     topLoc: 'मायोंग, मुरिगांव &nbsp;&middot;&nbsp; कामाख्या मंदिर, गुवाहाटी',
@@ -52,7 +52,7 @@ function chrome(over) {
     indexGroups: [
       { cat: 'काला जादू और सुरक्षा', links: [
         { url: 'black-magic-removal-kamakhya.html', label: 'कामाख्या मंदिर पर काला जादू टोना हटाना' },
-        { url: '../real-tantrik-assam.html', label: 'असली तांत्रिक कैसे पहचानें' }
+        { url: 'asan-me-sachcha-tantrik.html', label: 'असली तांत्रिक कैसे पहचानें' }
       ]},
       { cat: 'प्रेम और विवाह', links: [
         { url: 'love-problem-solution-kamakhya.html', label: 'कामाख्या में प्रेम समस्या का हल' },
@@ -64,9 +64,9 @@ function chrome(over) {
         { url: 'tantrik-baba-guwahati.html', label: 'गुवाहाटी में सबसे अच्छा तांत्रिक बाबा' }
       ]},
       { cat: 'जानकारी', links: [
-        { url: '../about-kamakhya-temple.html', label: 'कामाख्या मंदिर के बारे में जानकारी' },
+        { url: 'kamakhya-mandir.html', label: 'कामाख्या मंदिर के बारे में जानकारी' },
         { url: 'gallery.html', label: 'गैलरी: मंदिर, शिवलिंग और पूजा' },
-        { url: '../about.html', label: 'अतुल नाथ के बारे में' }
+        { url: 'about.html', label: 'अतुल नाथ के बारे में' }
       ]}
     ],
     footerAbout: 'अतुल नाथ',
@@ -75,20 +75,39 @@ function chrome(over) {
     footerPagesList: [
       { url: 'index.html', label: 'होम' },
       { url: 'services.html', label: 'सभी सेवाएं' },
-      { url: '../about.html', label: 'अतुल नाथ के बारे में' },
+      { url: 'about.html', label: 'अतुल नाथ के बारे में' },
       { url: 'gallery.html', label: 'गैलरी' },
       { url: 'contact.html', label: 'संपर्क और पता' }
     ],
     footerGuides: 'सेवाएं और जानकारी',
+    // Every entry must stay inside /hi/. The previous version reached the
+    // English pages with ../ prefixes, which left eleven Hindi service pages
+    // with no inbound link from anywhere on the site - they were only
+    // discoverable through the sitemap, and the Hindi half of every hreflang
+    // cluster was one crawl hop from the English half. The list is kept
+    // complete and in the same order as SERVICES in content/en-shared.js so
+    // the two footers stay comparable.
     footerGuidesList: [
-      { url: 'best-tantrik-mayong.html', label: 'मायोंग में सबसे अच्छा तांत्रिक' },
       { url: 'black-magic-removal-kamakhya.html', label: 'कामाख्या काला जादू टोना' },
+      { url: 'dosha-correction-kamakhya.html', label: 'दोष निवारण' },
+      { url: 'pandit-and-puja-booking-kamakhya.html', label: 'पूजा और पंडित बुकिंग' },
       { url: 'love-problem-solution-kamakhya.html', label: 'प्रेम समस्या हल' },
-      { url: 'vashikaran-specialist-mayong.html', label: 'वशीकरण विशेषज्ञ' },
+      { url: 'lost-love-recovery-kamakhya.html', label: 'प्रेम वापसी' },
+      { url: 'relationship-solution-kamakhya.html', label: 'रिश्ता समाधान' },
       { url: 'husband-wife-dispute-mayong.html', label: 'पति-पत्नी विवाद' },
+      { url: 'kundli-milan-match-making.html', label: 'कुंडली मिलान' },
+      { url: 'vashikaran-specialist-mayong.html', label: 'वशीकरण विशेषज्ञ' },
+      { url: 'business-problem-solution-mayong.html', label: 'व्यापार समस्या हल' },
+      { url: 'career-and-job-astrology-guwahati.html', label: 'करियर और नौकरी' },
+      { url: 'vastu-consultation-guwahati.html', label: 'वास्तु परामर्श' },
+      { url: 'child-birth-and-putra-santan.html', label: 'संतान और पुत्र संतान' },
+      { url: 'court-case-and-legal-aid-guwahati.html', label: 'मुकदमा और कानूनी' },
+      { url: 'name-correction-and-numerology.html', label: 'नाम सुधार और अंकशास्त्र' },
+      { url: 'best-tantrik-mayong.html', label: 'मायोंग में सबसे अच्छा तांत्रिक' },
       { url: 'tantrik-baba-guwahati.html', label: 'गुवाहाटी तांत्रिक बाबा' },
-      { url: '../about-kamakhya-temple.html', label: 'कामाख्या मंदिर के बारे में' },
-      { url: '../history-of-mayong-tantrik.html', label: 'मायोंग का इतिहास' },
+      { url: 'mayong-itihas.html', label: 'मायोंग का इतिहास' },
+      { url: 'kamakhya-mandir.html', label: 'कामाख्या मंदिर के बारे में' },
+      { url: 'asan-me-sachcha-tantrik.html', label: 'असली तांत्रिक कैसे पहचानें' },
       { url: 'gallery.html', label: 'गैलरी' }
     ],
     footerContact: 'संपर्क',
@@ -530,10 +549,10 @@ ${U.lightbox({ prefix: '../', label: 'गैलरी तस्वीर का 
       <div class="prose">
         <span class="eyebrow">आगे क्या पढ़ें</span>
         <h3>ऐसे पेज जिन्हें अभ्यास से मिलाना जा सकता है</h3>
-        <p><a href="../about.html">अतुल नाथ के बारे में</a> में मायोंग और कामाख्या मंदिर में बीते वर्ष, और वह क्या नहीं करते, यह शामिल है।</p>
-        <p><a href="../real-tantrik-assam.html">असली तांत्रिक कैसे पहचानें</a> में पैसे देने से पहले पूछे जाने योग्य सवाल दिए गए हैं, तस्वीरों वाला सवाल भी।</p>
-        <p><a href="../about-kamakhya-temple.html">कामाख्या मंदिर के बारे में</a> में मंदिर, उसकी तांत्रिक परंपरा और वहाँ की साधना के बारे में बताया गया है।</p>
-        <p><a href="../history-of-mayong-tantrik.html">मायोंग किसके लिए प्रसिद्ध है</a> में यह समझाया गया है कि मुरिगांव जिले में अभ्यास क्यों तरीके-मंत्र पर टिका है, न कि दिखावे पर।</p>
+        <p><a href="about.html">अतुल नाथ के बारे में</a> में मायोंग और कामाख्या मंदिर में बीते वर्ष, और वह क्या नहीं करते, यह शामिल है।</p>
+        <p><a href="asan-me-sachcha-tantrik.html">असली तांत्रिक कैसे पहचानें</a> में पैसे देने से पहले पूछे जाने योग्य सवाल दिए गए हैं, तस्वीरों वाला सवाल भी।</p>
+        <p><a href="kamakhya-mandir.html">कामाख्या मंदिर के बारे में</a> में मंदिर, उसकी तांत्रिक परंपरा और वहाँ की साधना के बारे में बताया गया है।</p>
+        <p><a href="mayong-itihas.html">मायोंग किसके लिए प्रसिद्ध है</a> में यह समझाया गया है कि मुरिगांव जिले में अभ्यास क्यों तरीके-मंत्र पर टिका है, न कि दिखावे पर।</p>
         <div class="callout" style="margin-top:26px">
           <p><strong>बुकिंग से पहले पूछ लीजिए।</strong> किसी मंदिर की तस्वीर यह नहीं बता सकती कि आपकी स्थिति में काम होगा या नहीं। पंद्रह मिनट की फोन बातचीत बता सकती है, और पहली बातचीत निःशुल्क है। <a href="tel:${TEL}">${PHONE}</a> पर कॉल कीजिए।</p>
         </div>

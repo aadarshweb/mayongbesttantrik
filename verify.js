@@ -42,7 +42,15 @@ try { JSON.parse(fs.readFileSync('manifest.json', 'utf8')); } catch (e) { bad('m
 const sm = fs.readFileSync('sitemap.xml', 'utf8');
 const locs = [...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
 console.log('   sitemap: ' + locs.length + ' urls, ' + (sm.match(/<xhtml:link/g) || []).length + ' hreflang alternates');
-if (locs.length !== pages.length - 1) bad('sitemap has ' + locs.length + ' urls but there are ' + (pages.length - 1) + ' indexable pages');
+// Indexable = every page that is not marked noindex in its own robots meta.
+// 404 is noindex, and so are the four legal pages, so this used to be written
+// as pages.length - 1 and would have failed the moment a second noindex page
+// existed. Deriving it from the markup means a page can be added or suppressed
+// without this check needing to know anything about it.
+const noindexPages = pages.filter(f => /<meta name="robots" content="[^"]*noindex/.test(fs.readFileSync(path.join(__dirname, f), 'utf8')));
+const indexable = pages.length - noindexPages.length;
+if (locs.length !== indexable) bad('sitemap has ' + locs.length + ' urls but there are ' + indexable + ' indexable pages');
+console.log('   ' + indexable + ' indexable pages, ' + noindexPages.length + ' noindex and correctly absent: ' + noindexPages.join(', '));
 if (sm.includes('404')) bad('404 in sitemap');
 for (const l of locs) {
   const rel = toRel(l);
@@ -187,6 +195,75 @@ console.log('6. extensionless URLs');
       [...new Set(leaks)].slice(0, 8).join('\n     '));
   }
   console.log('   ' + pages.length + ' pages + sitemap, no .html in canonical/og/hreflang/loc');
+}
+
+// 6b. every page must be reachable by clicking, and the two languages must not
+// link into each other by accident. Seventeen pages were orphaned at one point:
+// eleven Hindi service pages plus /hi/ itself, because the Hindi chrome and
+// footer reached the English pages with ../ prefixes, and the Hindi footer
+// listed six services where the English one listed all fifteen. Nothing in the
+// sitemap or the schema catches that, because an orphan is a valid page in a
+// valid sitemap - it is just never linked, so it is crawled rarely and indexed
+// late. This is the check that would have caught it.
+console.log('6b. internal link graph');
+{
+  const skipExt = /\.(jpg|png|svg|webp|css|js|ico|xml|txt|json)$/i;
+  const onDisk = new Set(pages);
+
+  // Public URL back to the file that serves it. Root-relative hrefs are the
+  // common case; the ../ and bare-slug forms still appear in page bodies.
+  const linkTo = (from, href) => {
+    let t = href.split('#')[0].split('?')[0];
+    if (!t) return null;
+    if (t.startsWith('https://mayongbesttantrik.com')) t = t.slice('https://mayongbesttantrik.com'.length);
+    else if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(t)) return null;
+    if (skipExt.test(t)) return null;
+    const dir = from.startsWith('hi/') ? 'hi/' : '';
+    let abs = t.startsWith('/') ? t.slice(1) : path.posix.normalize(dir + t);
+    if (abs.endsWith('/')) abs += 'index.html';
+    abs = abs.replace(/^\.\//, '').replace(/\/$/, '');
+    if (abs === '' || abs === '.') abs = 'index.html';
+    if (!abs.endsWith('.html')) abs += '.html';
+    return abs;
+  };
+
+  const inbound = new Map(pages.map(f => [f, new Set()]));
+  const empty = [];
+  const crossLang = new Set();
+  const dead = new Set();
+  let external = 0;
+
+  for (const f of pages) {
+    const h = fs.readFileSync(path.join(__dirname, f), 'utf8');
+    for (const m of h.matchAll(/<a\s([^>]*)href="([^"]*)"/g)) {
+      const attrs = m[1];
+      if (m[2] === '') { empty.push(f); continue; }
+      const to = linkTo(f, m[2]);
+      // null means the href left the site (tel:, mailto:, wa.me, maps) - not a
+      // broken internal link, just not our business here.
+      if (!to) { external++; continue; }
+      if (!onDisk.has(to)) { dead.add(f + ' -> ' + m[2]); continue; }
+      if (to === f) continue;
+      // The language switcher is the one cross-language link that is correct:
+      // offering the other language is the entire point of it.
+      if (/\bclass="[^"]*\blang-link\b/.test(attrs)) continue;
+      inbound.get(to).add(f);
+      if (f.startsWith('hi/') !== to.startsWith('hi/')) crossLang.add(f + ' -> ' + m[2]);
+    }
+  }
+
+  // href="" resolves to the current URL, so it silently becomes a self-link:
+  // the header logo and the footer "Home" entry pointed at the page you were
+  // already on. clean() used to reduce "index.html" to the empty string.
+  if (empty.length) bad('href="" (self-link) in ' + new Set(empty).size + ' pages: ' + [...new Set(empty)].slice(0, 5).join(', '));
+  if (dead.size) bad(dead.size + ' internal link(s) point at a file that is not on disk:\n     ' + [...dead].slice(0, 6).join('\n     '));
+  if (crossLang.size) {
+    bad(crossLang.size + ' cross-language internal link(s); use the same-language slug:\n     ' +
+      [...crossLang].slice(0, 6).join('\n     '));
+  }
+  const orphans = pages.filter(f => f !== '404.html' && inbound.get(f).size === 0);
+  if (orphans.length) bad('orphan pages, in the sitemap but linked from nowhere: ' + orphans.join(', '));
+  console.log('   ' + pages.length + ' pages, ' + external + ' external links skipped, no empty href, 0 orphans');
 }
 
 // 7. encoding integrity
