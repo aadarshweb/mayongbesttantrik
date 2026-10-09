@@ -1,4 +1,20 @@
+# https://mayongbesttantrik.com
+
+# Named search engines. Most-specific-match means these groups win over every
+# wildcard group in this file, including any added upstream by the CDN.
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Everything else.
 User-agent: *
 Allow: /
+
+# The only paths with no search demand. The 404 page carries noindex in its own
+# markup and is deliberately absent from the sitemap; this stops it being
+# fetched as a URL in its own right.
+Disallow: /404
 
 Sitemap: https://mayongbesttantrik.com/sitemap.xml

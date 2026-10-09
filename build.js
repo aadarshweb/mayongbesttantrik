@@ -350,6 +350,42 @@ ${p.body}
 /* ------------------------------------------------------------------ build */
 const written = [];
 
+/* --------------------------------------------------------------- lastmod
+   <lastmod> is the only thing in a sitemap that tells Google which pages
+   actually changed. It was one hardcoded string for all 50 URLs, which is
+   worse than omitting it: a uniform stale date reads as "nothing here has
+   been touched in a year" and Google quietly stops scheduling recrawls.
+
+   The date is derived from the page's own content, so editing one page moves
+   one <lastmod> and leaves the other 49 alone. The hash of the finished
+   document is what gets remembered - in .lastmod.json, committed with the
+   site - so a page whose bytes are unchanged keeps the date it had on the
+   previous build instead of being stamped "today" by a rebuild that touched
+   nothing. Without that carry-over every deploy would look like a full-site
+   change and the signal would be exactly as useless as the constant. */
+const crypto = require('crypto');
+const LASTMOD_FILE = path.join(ROOT, '.lastmod.json');
+const today = new Date().toISOString().slice(0, 10);
+let lastmodPrev = {};
+try { lastmodPrev = JSON.parse(fs.readFileSync(LASTMOD_FILE, 'utf8')); } catch (e) { /* first build */ }
+
+const lastmodNext = {};
+const lastmodOf = (url, html) => {
+  const hash = crypto.createHash('sha1').update(html).digest('hex').slice(0, 16);
+  const prev = lastmodPrev[url];
+  // Carry the date forward only when the finished document is byte-identical to
+  // the one that earned it. hash and date need separate keys: storing the date
+  // under the URL itself means the next build compares a date against a hash,
+  // never matches, and re-stamps all 50 pages on every rebuild.
+  const changed = !(prev && prev.hash === hash);
+  const date = changed ? today : prev.date;
+  // changed is recorded rather than recomputed downstream: after this build
+  // overwrites the ledger, the previous hashes are gone, so verify.js cannot
+  // work out which pages moved without the build leaving this note.
+  lastmodNext[url] = { hash, date, changed };
+  return date;
+};
+
 // record each page's own canonical + its declared pair, rather than guessing
 // the alternate from the filename. Guessing produced hreflang tags pointing
 // at pages that do not exist for the three guides whose Hindi slugs differ,
@@ -377,9 +413,24 @@ const record = (p, out, lang) => {
   });
 };
 
-for (const p of EN) { record(p, p.out, 'en'); fs.writeFileSync(path.join(ROOT, p.out), render(p), 'utf8'); }
+// The rendered document is kept as it is written, keyed by the public URL it
+// will be reachable at. The sitemap then hashes that exact string rather than
+// re-rendering, so the date and the file can never disagree.
+const rendered = {};
+
+for (const p of EN) {
+  const html = render(p);
+  record(p, p.out, 'en');
+  fs.writeFileSync(path.join(ROOT, p.out), html, 'utf8');
+  rendered[abs(p.canonical)] = html;
+}
 fs.mkdirSync(path.join(ROOT, 'hi'), { recursive: true });
-for (const p of HI) { record(p, 'hi/' + p.out, 'hi'); fs.writeFileSync(path.join(ROOT, 'hi', p.out), render(p), 'utf8'); }
+for (const p of HI) {
+  const html = render(p);
+  record(p, 'hi/' + p.out, 'hi');
+  fs.writeFileSync(path.join(ROOT, 'hi', p.out), html, 'utf8');
+  rendered[abs(p.canonical)] = html;
+}
 
 /* --------------------------------------------------------------- sitemap */
 /* Single choke point for every URL the sitemap prints, so <loc> and the
@@ -404,13 +455,17 @@ const urls = written
       <image:title>${g.title}</image:title>
       <image:caption>${g.title}</image:caption>
     </image:image>`).join('\n');
+    const url = loc(u.canon);
+    const date = lastmodOf(url, rendered[url] || '');
     return `  <url>
-    <loc>${loc(u.canon)}</loc>
-    <lastmod>${YEAR}-09-29</lastmod>
+    <loc>${url}</loc>
+    <lastmod>${date}</lastmod>
     <changefreq>${u.changefreq}</changefreq>
     <priority>${u.priority.toFixed(1)}</priority>${alts}${imgs ? '\n' + imgs : ''}
   </url>`;
   }).join('\n');
+
+fs.writeFileSync(LASTMOD_FILE, JSON.stringify(lastmodNext, null, 2) + '\n', 'utf8');
 
 fs.writeFileSync(path.join(ROOT, 'sitemap.xml'),
   `<?xml version="1.0" encoding="UTF-8"?>
@@ -419,10 +474,41 @@ ${urls}
 </urlset>
 `, 'utf8');
 
-/* ---------------------------------------------------------------- robots */
+/* ---------------------------------------------------------------- robots
+   Cloudflare's "Managed Content Signals" feature prepends a block to this file
+   before it goes out, and that block contains ~30 `User-agent: <bot>
+   Disallow: /` groups for AI and marketing crawlers. Googlebot and Bingbot are
+   not in that list, and the block ends with its own `User-agent: * / Allow: /`,
+   so nothing here has ever been blocked by robots.txt - the Search Console
+   "Indexed, though blocked by robots.txt" report is a historical state from
+   before the site was configured, not a live block.
+
+   The named search-engine groups are here anyway, and they are not decoration.
+   Group selection in robots.txt is by most-specific-match, not first-match: a
+   crawler named explicitly below ignores every `User-agent: *` group in the
+   file, including the ones Cloudflare adds. So if Cloudflare's managed block is
+   ever reconfigured to disallow `*`, Googlebot and Bingbot keep crawling this
+   site while genuinely unwanted crawlers stay blocked. It moves the search
+   engines out of the blast radius of a setting that is not ours to control. */
 fs.writeFileSync(path.join(ROOT, 'robots.txt'),
-  `User-agent: *
+  `# ${DOMAIN}
+
+# Named search engines. Most-specific-match means these groups win over every
+# wildcard group in this file, including any added upstream by the CDN.
+User-agent: Googlebot
 Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Everything else.
+User-agent: *
+Allow: /
+
+# The only paths with no search demand. The 404 page carries noindex in its own
+# markup and is deliberately absent from the sitemap; this stops it being
+# fetched as a URL in its own right.
+Disallow: /404
 
 Sitemap: ${DOMAIN}/sitemap.xml
 `, 'utf8');

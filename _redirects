@@ -1,0 +1,52 @@
+# Redirects for mayongbesttantrik.com
+#
+# Every rule here is 301, and every rule here fixes something that was actually
+# broken. Three separate problems, all of which cost indexing:
+#
+#   1. https://www.mayongbesttantrik.com/ returned 404 for every URL, including
+#      the homepage. Not a redirect - a dead host, a Cloudflare preview
+#      deployment answering on the www name. Search Console had indexed that
+#      404 homepage (it is the exact URL in the "Indexed, though blocked by
+#      robots.txt" report) while every canonical tag on the site pointed at the
+#      apex. Google was being told the site lives on www by its own index and
+#      on the apex by every page on it, and could not pick.
+#
+#   2. http:// was served 200 rather than redirected, so the same page was
+#      reachable at four addresses - http/https x apex/www. A canonical tag
+#      only settles that after Google has fetched all four and found them
+#      identical, which is four crawls spent to learn something a 301 states.
+#
+#   3. /about.html answered 307 Temporary Redirect to /about. A 307 explicitly
+#      means "this move is not permanent", so Google is entitled to keep
+#      crawling the .html URL and keep treating it as the canonical one. The
+#      clean URL is the real page; the .html form has to hand over authority
+#      with a 301 or it never does.
+#
+# Pages are written to disk as .html files, which is why the .html rules are not
+# optional: they are what makes the file on disk and the address in the sitemap
+# the same thing.
+#
+# Deliberately NOT here: anything for /sitemap.xml, /robots.txt or trailing
+# slashes. Those already resolve correctly on the host - /sitemap.xml and
+# /robots.txt serve 200, /hi/ serves 200 and /about/ is already normalised -
+# and a 200 rewrite in this file shadows the real asset, which turns a working
+# URL into a silently empty one.
+
+# --- host and scheme: everything lands on https://mayongbesttantrik.com ----
+https://www.mayongbesttantrik.com/*   https://mayongbesttantrik.com/:splat  301
+http://www.mayongbesttantrik.com/*    https://mayongbesttantrik.com/:splat  301
+http://mayongbesttantrik.com/*        https://mayongbesttantrik.com/:splat  301
+http://mayongbesttantrik.com          https://mayongbesttantrik.com/        301
+
+# --- .html -> clean URL, permanent ------------------------------------------
+# index.html is listed first and on its own: the /*.html rule below would
+# otherwise send it to /index, which does not exist.
+/index.html                           /                                     301
+/hi/index.html                        /hi/                                  301
+
+/*.html                               /:splat                               301
+
+# 404.html is deliberately absent. It is the filename the host looks for when
+# it has to render an error, so it has to keep existing at exactly that path -
+# redirecting it would be redirecting the site's own error handler out from
+# under the host.

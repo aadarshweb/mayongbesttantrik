@@ -277,5 +277,110 @@ for (const f of pages.concat(['robots.txt', 'sitemap.xml', 'manifest.json', 'js/
 }
 console.log('   clean, no BOM, no mojibake');
 
+/* 8. lastmod integrity -----------------------------------------------------
+   <lastmod> is the only field in a sitemap that says which pages actually
+   changed. Three ways it can be wrong, all of which were live at once:
+
+     - one hardcoded date on every URL, which reads as "nothing here has been
+       touched since <date>" and gets recrawls deprioritised;
+     - a date in the future, which Google discards the entry over;
+     - a rebuild that changed nothing still restamping all 50 pages with
+       today, which is the same lie as the constant, just a fresher one.
+
+   The build keeps a content hash per URL in .lastmod.json, so an unchanged
+   page keeps its old date. That file is the memory this check verifies. */
+console.log('8. sitemap lastmod');
+{
+  const lms = {};
+  for (const m of sm.matchAll(/<loc>([^<]+)<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/g)) lms[m[1]] = m[2];
+  if (Object.keys(lms).length !== locs.length) {
+    bad(Object.keys(lms).length + ' of ' + locs.length + ' sitemap urls carry a lastmod');
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  for (const [l, d] of Object.entries(lms)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) bad('malformed lastmod on ' + l + ': ' + d);
+    if (d > today) bad('lastmod in the future on ' + l + ': ' + d);
+  }
+  // Every page that changed since the previous build must carry today's date.
+  // Comparing against .lastmod.json is the only way to catch the silent case
+  // where a content edit leaves the stale date sitting there unchanged.
+  let prev = {};
+  try { prev = JSON.parse(fs.readFileSync('.lastmod.json', 'utf8')); } catch (e) { bad('.lastmod.json missing or unreadable: ' + e.message); }
+  if (Object.keys(prev).length) {
+    // build.js stamps each entry with changed:true/false against the previous
+    // ledger, because it is the only place that still holds the old hashes.
+    // Two failure modes, both silent: a changed page keeping a stale date, and
+    // an unchanged page being re-stamped so a no-op rebuild looks sitewide.
+    const changed = locs.filter(l => prev[l] && prev[l].changed);
+    const stale = changed.filter(l => lms[l] !== today);
+    if (stale.length) bad('content changed but lastmod not advanced (' + stale.length + '): ' + stale.slice(0, 4).join(', '));
+    const needless = locs.filter(l => prev[l] && !prev[l].changed && lms[l] !== prev[l].date);
+    if (needless.length) bad('unchanged page had its lastmod moved anyway (' + needless.length + '): ' + needless.slice(0, 4).join(', '));
+    console.log('   ' + changed.length + ' of ' + locs.length + ' pages changed since the last build, ' +
+      (locs.length - changed.length) + ' carried their existing date forward');
+  }
+  const distinct = [...new Set(Object.values(lms))].sort();
+  console.log('   ' + distinct.length + ' distinct date(s) across ' + locs.length + ' urls' +
+    (distinct.length === 1
+      ? ' (expected on a first publish; it spreads as pages are edited)'
+      : ': ' + distinct.join(' ')));
+}
+
+// 9. redirects. The three defects these fix were all measured on the live host,
+// not inferred: www 404'd on every path, http served 200 rather than
+// redirecting, and every .html URL answered 307 instead of 301. A 307 tells
+// Google the move is temporary, so the clean URL never inherits the .html one.
+console.log('9. redirects');
+{
+  let rd = '';
+  try { rd = fs.readFileSync('_redirects', 'utf8'); } catch (e) { bad('_redirects missing: ' + e.message); }
+  const rules = rd.split('\n').filter(l => l.trim() && !l.trim().startsWith('#'));
+  for (const need of [
+    ['www over https', /^https:\/\/www\.mayongbesttantrik\.com\/\*\s+https:\/\/mayongbesttantrik\.com\/:splat\s+301/m],
+    ['www over http', /^http:\/\/www\.mayongbesttantrik\.com\/\*/m],
+    ['apex over http', /^http:\/\/mayongbesttantrik\.com\/\*/m],
+    ['.html to clean', /^\/\*\.html\s+\/:splat\s+301/m],
+    ['index.html to root', /^\/index\.html\s+\/\s+301/m],
+    ['hi/index.html to /hi/', /^\/hi\/index\.html\s+\/hi\/\s+301/m]
+  ]) {
+    if (!need[1].test(rd)) bad('_redirects has no rule for: ' + need[0]);
+  }
+  // Any non-301 status in here is a bug: 302 and 307 both withhold authority.
+  for (const l of rules) {
+    const code = l.trim().split(/\s+/).pop();
+    if (!/^(200|301)$/.test(code)) bad('_redirects rule is not permanent: ' + l.trim());
+  }
+  // 404.html must not be redirected: it is the filename the host renders an
+  // error from, and a rule moving it would move the error handler itself.
+  if (/^\/404\.html\s/m.test(rd)) bad('_redirects redirects /404.html, which is the host error handler');
+  console.log('   ' + rules.length + ' rules, all 301, www/http/.html all covered');
+}
+
+// 10. robots.txt. Cloudflare prepends a managed block to this file, so the
+// named search-engine groups below are what keep Googlebot and Bingbot out of
+// the blast radius of a CDN setting we do not control: robots.txt group
+// selection is most-specific-match, so naming them explicitly overrides every
+// wildcard group in the file including the ones added upstream.
+console.log('10. robots.txt');
+{
+  const rb = fs.readFileSync('robots.txt', 'utf8');
+  for (const bot of ['Googlebot', 'Bingbot']) {
+    const re = new RegExp('User-agent:\\s*' + bot + '\\s*\\r?\\n(Allow|Disallow):\\s*(.*)');
+    const m = rb.match(re);
+    if (!m) bad('robots.txt has no explicit group for ' + bot);
+    else if (!/^Allow:\s*\/\s*$/i.test(m[1] + ': ' + m[2].trim())) bad(bot + ' is not allowed in robots.txt: ' + m[0]);
+  }
+  if (!/^Sitemap:\s*https:\/\/mayongbesttantrik\.com\/sitemap\.xml\s*$/m.test(rb)) bad('robots.txt does not point at the sitemap by absolute URL');
+  if (!/^User-agent:\s*\*\s*$/m.test(rb)) bad('robots.txt has no wildcard group');
+  // A stray Disallow under the wildcard group takes down the whole site, so
+  // the only paths excluded may be /404 and nothing else.
+  for (const m of rb.matchAll(/^User-agent:\s*\*.*?(?=^User-agent:|^Sitemap:|\Z)/gms)) {
+    for (const d of m[0].matchAll(/^Disallow:\s*(\S*)/gm)) {
+      if (d[1] && d[1] !== '/404') bad('robots.txt blocks ' + d[1] + ' for all crawlers');
+    }
+  }
+  console.log('   Googlebot and Bingbot named and allowed, sitemap declared, nothing else blocked');
+}
+
 console.log('\n' + (fail ? fail + ' FAILURES' : 'ALL CHECKS PASSED'));
 process.exit(fail ? 1 : 0);

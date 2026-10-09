@@ -1,2 +1,7 @@
 *.md
 .kilo/
+
+# .lastmod.json is NOT ignored. It is the per-page content-hash ledger build.js
+# uses to decide which <lastmod> dates advance, so it has to be committed with
+# the site: without it in version history a fresh clone re-dates all 50 URLs on
+# its first build and the sitemap once again claims the whole site is new.

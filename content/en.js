@@ -86,8 +86,8 @@ ${U.stats([
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">What is done here</span>
-      <h2>Six of the sixteen areas of work</h2>
-      <p>There are sixteen areas of work in total, each with its own page, its own keyword cluster, and an honest account of what is and is not realistic. These six are the ones most people arrive looking for. <a href="services.html">See all sixteen services</a>.</p>
+      <h2>Six of the fifteen areas of work</h2>
+      <p>There are fifteen areas of work in total, each with its own page, its own keyword cluster, and an honest account of what is and is not realistic. These six are the ones most people arrive looking for. <a href="services.html">See all fifteen services</a>.</p>
     </div>
     ${U.serviceRows(S.rows(s => ['black-magic-removal-kamakhya','love-problem-solution-kamakhya','lost-love-recovery-kamakhya','husband-wife-dispute-mayong','vashikaran-specialist-mayong','business-problem-solution-mayong'].includes(s.slug)))}
   </div>
@@ -259,7 +259,7 @@ pages.push({
   body: `${U.pagehead(Object.assign(chrome(), {
     eyebrow: 'What is offered',
     h1: 'Tantrik and Vedic astrology services in Mayong and Kamakhya Temple',
-    sub: 'Sixteen areas of work, what each one involves, what it costs, and what it cannot do.'
+    sub: 'Fifteen areas of work, what each one involves, what it costs, and what it cannot do.'
   }))}
 
 <section class="section">
@@ -267,8 +267,8 @@ pages.push({
     <div class="prose" style="max-width:840px;margin-bottom:52px">
       <span class="eyebrow">Overview</span>
       <h2>Spiritual services in Assam, and how they are priced</h2>
-      <p>Atul Nath Aghori Tantrik works on sixteen areas of tantric, astrological and ritual practice from Mayong in Morigaon district and Kamakhya Temple in Guwahati. They are listed below in the order people most often need them, and each has a page of its own. Each has a full page of its own with the detail, and the questions at the foot of this page cover cost, distance and working remotely.</p>
-      <p>Two things are true of all sixteen. First, the diagnosis comes before the ritual: a horoscope is read and the cause identified before anything is decided, priced or scheduled. Second, the price is agreed in writing before a date is fixed, and it does not change afterwards. If a practitioner will not give you a price, or will only give it on the second or third call, that is the whole answer.</p>
+      <p>Atul Nath Aghori Tantrik works on fifteen areas of tantric, astrological and ritual practice from Mayong in Morigaon district and Kamakhya Temple in Guwahati. They are listed below in the order people most often need them, and each has a full page of its own with the detail. The questions at the foot of this page cover cost, distance and working remotely.</p>
+      <p>Two things are true of all fifteen. First, the diagnosis comes before the ritual: a horoscope is read and the cause identified before anything is decided, priced or scheduled. Second, the price is agreed in writing before a date is fixed, and it does not change afterwards. If a practitioner will not give you a price, or will only give it on the second or third call, that is the whole answer.</p>
       <p>None of these is expensive in the sense that matters, which is that people lose money by going to the wrong person first. A horoscope reading on its own often settles a question that a year of remedies has not.</p>
     </div>
     ${U.serviceRows(S.rows())}
