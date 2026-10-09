@@ -1,52 +1,35 @@
 # Redirects for mayongbesttantrik.com
 #
-# Every rule here is 301, and every rule here fixes something that was actually
-# broken. Three separate problems, all of which cost indexing:
+# Workers static assets only. Cloudflare's docs are explicit that domain-level
+# redirects are NOT supported here ("Domain-level redirects: no"), and the
+# wrangler deploy fails outright on an absolute source:
 #
-#   1. https://www.mayongbesttantrik.com/ returned 404 for every URL, including
-#      the homepage. Not a redirect - a dead host, a Cloudflare preview
-#      deployment answering on the www name. Search Console had indexed that
-#      404 homepage (it is the exact URL in the "Indexed, though blocked by
-#      robots.txt" report) while every canonical tag on the site pointed at the
-#      apex. Google was being told the site lives on www by its own index and
-#      on the apex by every page on it, and could not pick.
+#     Invalid _redirects configuration:
+#     Line 36: Only relative URLs are allowed. [code: 100324]
 #
-#   2. http:// was served 200 rather than redirected, so the same page was
-#      reachable at four addresses - http/https x apex/www. A canonical tag
-#      only settles that after Google has fetched all four and found them
-#      identical, which is four crawls spent to learn something a 301 states.
+# So the www and http rules that used to be in this file cannot live here. They
+# are a Cloudflare Redirect Rule in the dashboard, which runs in front of the
+# Worker - see worker.js for why that matters.
 #
-#   3. /about.html answered 307 Temporary Redirect to /about. A 307 explicitly
-#      means "this move is not permanent", so Google is entitled to keep
-#      crawling the .html URL and keep treating it as the canonical one. The
-#      clean URL is the real page; the .html form has to hand over authority
-#      with a 301 or it never does.
+# Every rule below is a relative path redirect with an explicit 301. Workers
+# defaults to 302 when the code is omitted, which is the same authority-
+# withholding problem as the 307 this replaces: a 302 or 307 tells Google the
+# move is temporary, so the clean URL never inherits the .html one.
 #
-# Pages are written to disk as .html files, which is why the .html rules are not
-# optional: they are what makes the file on disk and the address in the sitemap
-# the same thing.
+# The three defects these fix, all measured on the live host:
 #
-# Deliberately NOT here: anything for /sitemap.xml, /robots.txt or trailing
-# slashes. Those already resolve correctly on the host - /sitemap.xml and
-# /robots.txt serve 200, /hi/ serves 200 and /about/ is already normalised -
-# and a 200 rewrite in this file shadows the real asset, which turns a working
-# URL into a silently empty one.
+#   1. /about.html answered 307 to /about, withholding authority permanently.
+#   2. /about/ and /file/index also answered 307.
+#   3. www 404'd and http:// served 200, both now handled in the Worker.
 
-# --- host and scheme: everything lands on https://mayongbesttantrik.com ----
-https://www.mayongbesttantrik.com/*   https://mayongbesttantrik.com/:splat  301
-http://www.mayongbesttantrik.com/*    https://mayongbesttantrik.com/:splat  301
-http://mayongbesttantrik.com/*        https://mayongbesttantrik.com/:splat  301
-http://mayongbesttantrik.com          https://mayongbesttantrik.com/        301
+# index.html and hi/index.html are listed first and separately. The /*.html
+# rule below would send /index.html to /index and /hi/index.html to /hi/index,
+# neither of which exists.
+/index.html      /          301
+/hi/index.html   /hi/       301
 
-# --- .html -> clean URL, permanent ------------------------------------------
-# index.html is listed first and on its own: the /*.html rule below would
-# otherwise send it to /index, which does not exist.
-/index.html                           /                                     301
-/hi/index.html                        /hi/                                  301
+/*.html          /:splat    301
 
-/*.html                               /:splat                               301
-
-# 404.html is deliberately absent. It is the filename the host looks for when
-# it has to render an error, so it has to keep existing at exactly that path -
-# redirecting it would be redirecting the site's own error handler out from
-# under the host.
+# 404.html is deliberately absent. It is the filename not_found_handling looks
+# for when it renders an error, and it has to keep existing at exactly that
+# path - a rule moving it would move the error handler itself.

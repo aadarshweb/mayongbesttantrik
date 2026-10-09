@@ -35,7 +35,7 @@ console.log('2. support files');
 // favicon.png is the plain-named 48px icon some crawlers look for by
 // convention rather than by parsing the <link> tags, so it is listed here
 // alongside the rest of the support files.
-for (const f of ['robots.txt', 'sitemap.xml', 'manifest.json', 'favicon.ico', 'favicon.png', 'favicon-48.png', 'favicon-192.png', 'css/style.css', 'js/script.js']) {
+for (const f of ['robots.txt', 'sitemap.xml', 'manifest.json', 'favicon.ico', 'favicon.png', 'favicon-48.png', 'favicon-192.png', 'css/style.css', 'js/script.js', 'worker.js', 'wrangler.jsonc', '.assetsignore', '_redirects']) {
   if (!fs.existsSync(path.join(__dirname, f))) bad('missing ' + f);
 }
 try { JSON.parse(fs.readFileSync('manifest.json', 'utf8')); } catch (e) { bad('manifest.json: ' + e.message); }
@@ -326,37 +326,59 @@ console.log('8. sitemap lastmod');
       : ': ' + distinct.join(' ')));
 }
 
-// 9. redirects. The three defects these fix were all measured on the live host,
-// not inferred: www 404'd on every path, http served 200 rather than
-// redirecting, and every .html URL answered 307 instead of 301. A 307 tells
-// Google the move is temporary, so the clean URL never inherits the .html one.
+// 9. redirects. Workers static assets support only relative-URL redirects in
+// _redirects - the deploy fails with "Only relative URLs are allowed" on an
+// absolute source, and Cloudflare documents domain-level redirects as
+// unsupported. So the file carries the path redirects and worker.js carries
+// host and scheme. Both halves are checked here because the failure mode of
+// getting it wrong is a deploy that does not run at all.
 console.log('9. redirects');
 {
   let rd = '';
   try { rd = fs.readFileSync('_redirects', 'utf8'); } catch (e) { bad('_redirects missing: ' + e.message); }
   const rules = rd.split('\n').filter(l => l.trim() && !l.trim().startsWith('#'));
   for (const need of [
-    ['www over https', /^https:\/\/www\.mayongbesttantrik\.com\/\*\s+https:\/\/mayongbesttantrik\.com\/:splat\s+301/m],
-    ['www over http', /^http:\/\/www\.mayongbesttantrik\.com\/\*/m],
-    ['apex over http', /^http:\/\/mayongbesttantrik\.com\/\*/m],
     ['.html to clean', /^\/\*\.html\s+\/:splat\s+301/m],
     ['index.html to root', /^\/index\.html\s+\/\s+301/m],
     ['hi/index.html to /hi/', /^\/hi\/index\.html\s+\/hi\/\s+301/m]
   ]) {
     if (!need[1].test(rd)) bad('_redirects has no rule for: ' + need[0]);
   }
-  // Any non-301 status in here is a bug: 302 and 307 both withhold authority.
+  // Any non-301 status in here is a bug: 302 and 307 both withhold authority,
+  // and Workers defaults to 302 when the code is omitted entirely.
   for (const l of rules) {
     const code = l.trim().split(/\s+/).pop();
     if (!/^(200|301)$/.test(code)) bad('_redirects rule is not permanent: ' + l.trim());
   }
-  // 404.html must not be redirected: it is the filename the host renders an
-  // error from, and a rule moving it would move the error handler itself.
+  // An absolute source is the exact line that failed the deploy, so it must
+  // never come back: wrangler rejects it and the whole deploy does not run.
+  for (const l of rules) {
+    const source = l.trim().split(/\s+/)[0];
+    if (/^https?:\/\//i.test(source)) bad('_redirects has an absolute source, which wrangler rejects: ' + l.trim());
+  }
+  // 404.html must not be redirected: it is the filename not_found_handling
+  // renders an error from, and a rule moving it moves the error handler itself.
   if (/^\/404\.html\s/m.test(rd)) bad('_redirects redirects /404.html, which is the host error handler');
-  console.log('   ' + rules.length + ' rules, all 301, www/http/.html all covered');
+
+  // The other half: host and scheme, which _redirects cannot express.
+  let wk = '';
+  try { wk = fs.readFileSync('worker.js', 'utf8'); } catch (e) { bad('worker.js missing: ' + e.message); }
+  if (!/mayongbesttantrik\.com/.test(wk)) bad('worker.js does not name the canonical host');
+  // Every Response.redirect in the Worker must be permanent. A 302 here would
+  // reintroduce exactly the bug the .html rules exist to remove. Matched to
+  // the closing semicolon rather than the closing paren, because the argument
+  // list contains a nested call (target.toString()) whose own paren would end
+  // the match early and hide the status code.
+  const redirects = wk.match(/Response\.redirect\([\s\S]*?\)\s*;/g) || [];
+  if (!redirects.length) bad('worker.js has no redirect for host/scheme');
+  for (const r of redirects) {
+    if (!/,\s*30[18]\s*\)/.test(r)) bad('worker.js redirect is not permanent: ' + r.replace(/\s+/g, ' ').slice(0, 70));
+  }
+  if (!/env\.ASSETS\.fetch/.test(wk)) bad('worker.js never defers to static assets');
+  console.log('   ' + rules.length + ' _redirects rules, all 301 and relative; host/scheme handled in worker.js');
 }
 
-// 10. robots.txt. Cloudflare prepends a managed block to this file, so the
+// 11. robots.txt. Cloudflare prepends a managed block to this file, so the
 // named search-engine groups below are what keep Googlebot and Bingbot out of
 // the blast radius of a CDN setting we do not control: robots.txt group
 // selection is most-specific-match, so naming them explicitly overrides every
@@ -380,6 +402,58 @@ console.log('10. robots.txt');
     }
   }
   console.log('   Googlebot and Bingbot named and allowed, sitemap declared, nothing else blocked');
+}
+
+/* 11. nothing but the published site may be reachable ----------------------
+   The asset directory is the repository root, so before .assetsignore existed
+   every file in the working tree was a public URL: /.git/config served the
+   repository's remote URL, /.git/index listed every path in the tree, and
+   /build.js and /content/en.js served the whole site source in one request.
+
+   .assetsignore is what stops the upload; worker.js is the second lock on the
+   same door. Both are checked, because a change to either one that drops the
+   other re-opens the hole silently - a successful deploy says nothing about
+   whether your git history is on the internet. */
+console.log('11. nothing but the site is reachable');
+{
+  let ai = '';
+  try { ai = fs.readFileSync('.assetsignore', 'utf8'); } catch (e) { bad('.assetsignore missing: ' + e.message); }
+  for (const need of [
+    ['.git', /^\/\.git\/?$/m],
+    ['the build scripts', /^\/\*\.js$/m],
+    ['the page source', /^\/content\//m],
+    ['the lastmod ledger', /^\/\.lastmod\.json$/m],
+    ['the Worker itself', /^\/wrangler\.jsonc$/m]
+  ]) {
+    if (!need[1].test(ai)) bad('.assetsignore does not exclude ' + need[0]);
+  }
+  // The site's own js/ directory has to survive this. /*.js is anchored to the
+  // root; an unanchored *.js would also drop js/, and every page loads it.
+  if (/^\*\.js$/m.test(ai)) bad('.assetsignore has an unanchored *.js, which would also drop the site js/ directory');
+  if (/^\/js\/$/m.test(ai)) bad('.assetsignore excludes /js/, which every page loads');
+  if (!fs.existsSync(path.join(__dirname, 'js/script.js'))) bad('js/script.js is missing from the repo');
+
+  // The same list, enforced at request time. Segment-wise, so /content and
+  // /content/ are both refused and /contents is not caught by accident.
+  const wk = fs.readFileSync('worker.js', 'utf8');
+  const blocked = ((wk.match(/const BLOCKED = \[([\s\S]*?)\];/) || [, ''])[1]
+    .match(/'([^']+)'/g) || []).map(s => s.replace(/'/g, ''));
+  for (const p of ['/.git', '/build.js', '/content', '/.lastmod.json', '/wrangler.jsonc']) {
+    if (!blocked.includes(p)) bad('worker.js does not block ' + p);
+  }
+  if (!blocked.some(b => b.startsWith('/.'))) bad('worker.js does not block dotfile paths generally');
+
+  // html_handling has to stay auto-trailing-slash: "none" serves /about.html
+  // with a 200, so the extensionless URL in every canonical tag stops
+  // resolving. not_found_handling has to be 404-page, or Workers answers an
+  // unmatched path with an empty body and the branded 404 is never shown.
+  const wr = fs.readFileSync('wrangler.jsonc', 'utf8').replace(/^\s*\/\/.*$/gm, '');
+  if (!/"html_handling"\s*:\s*"auto-trailing-slash"/.test(wr)) bad('wrangler.jsonc does not set html_handling to auto-trailing-slash');
+  if (!/"not_found_handling"\s*:\s*"404-page"/.test(wr)) bad('wrangler.jsonc does not set not_found_handling to 404-page');
+  if (!/"main"\s*:\s*"worker\.js"/.test(wr)) bad('wrangler.jsonc does not point main at worker.js, so host and scheme are never normalised');
+
+  console.log('   ' + blocked.length + ' paths blocked at request time, ' +
+    ai.split('\n').filter(l => l.trim() && !l.trim().startsWith('#')).length + ' upload patterns');
 }
 
 console.log('\n' + (fail ? fail + ' FAILURES' : 'ALL CHECKS PASSED'));

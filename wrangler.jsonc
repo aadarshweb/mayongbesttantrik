@@ -1,0 +1,49 @@
+{
+	// mayongbesttantrik.com - Cloudflare Workers static assets.
+	//
+	// The assets directory is the repository root, because the HTML pages are
+	// committed rather than compiled into a dist/ folder. That makes
+	// .assetsignore load-bearing rather than tidy: without it wrangler uploads
+	// the working tree, and /.git/config becomes a public URL.
+	"$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "mayongbesttantrik",
+  "compatibility_date": "2026-10-09",
+  "observability": {
+    "enabled": true
+  },
+
+  // worker.js normalises host and scheme, and refuses to serve anything that
+  // is not the published site. It has to be a Worker script because Workers
+  // supports only relative-URL redirects in _redirects - the www and http
+  // redirects cannot be expressed there at all.
+  "main": "worker.js",
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+
+    // Asset-first, deliberately. With run_worker_first the Worker would run on
+    // every page view and every image, and those invocations are billable. As
+    // configured, worker.js only runs when no static asset matched the request:
+    // the www/http redirect case, and a blocked path.
+    "run_worker_first": false,
+
+		// Serve 404.html with a real 404 status for anything that does not
+		// match an asset. Without this Workers answers an unmatched path with
+		// an empty 200-shaped 404, so a visitor who mistypes a URL gets a blank
+		// page and the branded 404 - which exists, is written, and carries
+		// noindex - is never shown to anyone.
+		"not_found_handling": "404-page",
+
+		// Individual files are served without a trailing slash (/about) and
+		// folder indexes with one (/hi/). This is what makes the extensionless
+		// URL in every canonical tag and in sitemap.xml the address that
+		// actually resolves.
+		//
+		// html_handling also emits a 307 for /about.html -> /about, but
+		// _redirects is evaluated first and returns 301 for the same request,
+		// so the .html form hands over authority permanently. A 307 states the
+		// move is temporary, which lets Google keep treating the .html URL as
+		// canonical, which is the bug this whole change exists to fix.
+		"html_handling": "auto-trailing-slash"
+	}
+}

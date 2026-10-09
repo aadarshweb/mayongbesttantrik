@@ -1,0 +1,42 @@
+# Files that must never be uploaded as public static assets.
+#
+# This is the root of the repository, so the assets directory IS the working
+# tree. Without this file wrangler uploads everything in it, and everything in
+# it becomes a public URL. That is not theoretical: before this file existed,
+# https://mayongbesttantrik.com/.git/config returned 200 and served the
+# repository's remote URL to anyone who asked, along with /.git/index,
+# /.git/logs/HEAD, /build.js and every file under /content.
+#
+# Syntax is gitignore's. Patterns are anchored to the root of the assets
+# directory, so /*.js matches the build scripts at the top level while leaving
+# the site's own js/ directory alone - that one is real, referenced by every
+# page, and must be served.
+
+# Version control. .git/index lists every path in the working tree and
+# .git/logs/HEAD records every commit ref that has ever been checked out.
+/.git/
+
+# Build tooling and page source. Not secret, but none of it is meant to be
+# fetched by a visitor or a crawler, and /content/en.js is the entire copy of
+# the site in one request.
+/*.js
+/content/
+/.kilo/
+/issues/
+
+# The lastmod ledger is build state, not site content. The dates it produces
+# are already published in sitemap.xml.
+/.lastmod.json
+
+# Repo and deploy config. worker.js and wrangler.jsonc are read by wrangler at
+# deploy time and must not be served.
+/.gitignore
+/.assetsignore
+/wrangler.jsonc
+/assetsignore
+
+# Tooling that has no business being public.
+/*.ps1
+/*.md
+/node_modules/
+/.wrangler/

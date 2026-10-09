@@ -5,3 +5,12 @@
 # uses to decide which <lastmod> dates advance, so it has to be committed with
 # the site: without it in version history a fresh clone re-dates all 50 URLs on
 # its first build and the sitemap once again claims the whole site is new.
+
+# Deploy tooling. wrangler.jsonc and worker.js are part of the deployment and
+# are committed; only the local cache it writes is not.
+/.wrangler/
+node_modules/
+
+# .assetsignore is the file that stops wrangler uploading the working tree as
+# public assets, so it must reach the build environment. Never ignore it.
+!.assetsignore
